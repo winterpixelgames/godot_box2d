@@ -753,3 +753,30 @@ Box2DCapsuleShape::Box2DCapsuleShape() {
 	set_radius(10.0f);
 	set_height(20.0f);
 }
+
+
+void Box2DSDFShape::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &Box2DSDFShape::set_radius);
+	ClassDB::bind_method(D_METHOD("get_radius"), &Box2DSDFShape::get_radius);
+
+	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_EXP_RANGE, "0.5,16384,0.5"), "set_radius", "get_radius");
+}
+
+void Box2DSDFShape::set_radius(real_t p_radius) {
+	sdfShape.m_radius = MAX(p_radius * GD_TO_B2, b2_linearSlop);
+	emit_changed();
+}
+
+real_t Box2DSDFShape::get_radius() const {
+	return sdfShape.m_radius * B2_TO_GD;
+}
+
+void Box2DSDFShape::draw(const RID &p_to_rid, const Color &p_color) {
+	Color c(p_color);
+	c.a *= 0.5;
+	draw_circle(p_to_rid, Vector2(0, 0), get_radius(), 24, c);
+}
+
+Box2DSDFShape::Box2DSDFShape() {
+	set_radius(10.0f);
+}

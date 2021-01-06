@@ -7,6 +7,7 @@
 #include <box2d/b2_circle_shape.h>
 #include <box2d/b2_edge_shape.h>
 #include <box2d/b2_polygon_shape.h>
+#include <box2d/b2_sdf_shape.h>
 #include <box2d/b2_shape.h>
 
 #include "../../util/box2d_types_converter.h"
@@ -210,6 +211,25 @@ public:
 	virtual void draw(const RID &p_to_rid, const Color &p_color) override;
 
 	Box2DCapsuleShape();
+};
+
+class Box2DSDFShape : public Box2DShape {
+	GDCLASS(Box2DSDFShape, Box2DShape);
+
+	b2SDFShape sdfShape;
+
+	virtual const b2Shape *get_shape() const override { return &sdfShape; }
+
+protected:
+	static void _bind_methods();
+
+public:
+	void set_radius(real_t p_radius);
+	real_t get_radius() const;
+
+	virtual void draw(const RID &p_to_rid, const Color &p_color) override;
+
+	Box2DSDFShape();
 };
 
 #endif // BOX2D_SHAPES_H
