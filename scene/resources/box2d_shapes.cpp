@@ -2,7 +2,11 @@
 
 #include <core/config/project_settings.h>
 #include <core/math/geometry_2d.h>
+#include <core/io/resource_loader.h>
 #include <servers/rendering_server.h>
+#include <scene/resources/shader.h>
+
+
 
 #include "../../util/box2d_types_converter.h"
 #include "../2d/box2d_fixtures.h"
@@ -791,6 +795,20 @@ void Box2DSDFShape::draw(const RID &p_to_rid, const Viewport* p_viewport, const 
 	// This is going to be slow, but lets try and just render the sdf here.
 	RID test_tex = RenderingServer::get_singleton()->canvas_texture_create();
 	RenderingServer::get_singleton()->canvas_item_add_texture_rect(p_to_rid, p_viewport->get_visible_rect(), test_tex);
+
+	
+	if(!debug_mat.is_valid()) {
+		//TODO: figure out better way, testing only right now
+		Ref<ShaderMaterial> shader;
+		shader.instance();
+		shader->set_path("res://sdfs/sdf_map.tres");
+		shader->reload_from_file();
+		debug_mat = shader;
+	}
+
+	bool is_valid = debug_mat.is_valid();
+
+	RenderingServer::get_singleton()->canvas_item_set_material(p_to_rid, debug_mat->get_rid());
 }
 
 Box2DSDFShape::Box2DSDFShape() {

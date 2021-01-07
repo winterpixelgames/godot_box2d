@@ -32,6 +32,8 @@ class Box2DShape : public Resource {
 protected:
 	static void _bind_methods();
 
+	Ref<ShaderMaterial> debug_mat;
+
 public:
 	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
 
