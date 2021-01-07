@@ -201,7 +201,7 @@ void Box2DFixture::_notification(int p_what) {
 			}
 
 			if (shape.is_valid()) {
-				shape->draw(get_canvas_item(), draw_col);
+				shape->draw(get_canvas_item(), get_viewport(), draw_col);
 			}
 		} break;
 	}

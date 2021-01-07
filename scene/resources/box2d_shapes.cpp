@@ -107,7 +107,7 @@ real_t Box2DCircleShape::get_radius() const {
 	return circleShape.m_radius * B2_TO_GD;
 }
 
-void Box2DCircleShape::draw(const RID &p_to_rid, const Color &p_color) {
+void Box2DCircleShape::draw(const RID &p_to_rid, const Viewport* p_viewport, const Color &p_color) {
 	Color c(p_color);
 	c.a *= 0.5;
 	draw_circle(p_to_rid, Vector2(0, 0), get_radius(), 24, c);
@@ -164,7 +164,7 @@ real_t Box2DRectShape::get_height() const {
 	return height;
 }
 
-void Box2DRectShape::draw(const RID &p_to_rid, const Color &p_color) {
+void Box2DRectShape::draw(const RID &p_to_rid, const Viewport* p_viewport, const Color &p_color) {
 	Color c(p_color);
 	c.a *= 0.5;
 	draw_rect(p_to_rid, width, height, c);
@@ -257,7 +257,7 @@ void Box2DSegmentShape::set_as_two_sided(const Vector2 &p_a, const Vector2 &p_b)
 	emit_changed();
 }
 
-void Box2DSegmentShape::draw(const RID &p_to_rid, const Color &p_color) {
+void Box2DSegmentShape::draw(const RID &p_to_rid, const Viewport* p_viewport, const Color &p_color) {
 	const Vector2 a = get_a();
 	const Vector2 b = get_b();
 
@@ -610,7 +610,7 @@ bool Box2DPolygonShape::get_invert_order() const {
 	return invert_order;
 }
 
-void Box2DPolygonShape::draw(const RID &p_to_rid, const Color &p_color) {
+void Box2DPolygonShape::draw(const RID &p_to_rid, const Viewport* p_viewport, const Color &p_color) {
 	if (build_mode == BUILD_SOLIDS || build_mode == BUILD_OVERLAPPING_SOLIDS) {
 
 		int vertex_count = points.size();
@@ -735,7 +735,7 @@ real_t Box2DCapsuleShape::get_radius() const {
 	return radius;
 }
 
-void Box2DCapsuleShape::draw(const RID &p_to_rid, const Color &p_color) {
+void Box2DCapsuleShape::draw(const RID &p_to_rid, const Viewport* p_viewport, const Color &p_color) {
 	Color c(p_color);
 	c.a *= 0.5;
 
@@ -754,12 +754,15 @@ Box2DCapsuleShape::Box2DCapsuleShape() {
 	set_height(20.0f);
 }
 
-
 void Box2DSDFShape::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &Box2DSDFShape::set_radius);
 	ClassDB::bind_method(D_METHOD("get_radius"), &Box2DSDFShape::get_radius);
 
+	ClassDB::bind_method(D_METHOD("set_map_func", "map_func"), &Box2DSDFShape::set_map_func);
+	ClassDB::bind_method(D_METHOD("get_map_func"), &Box2DSDFShape::get_map_func);
+
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_EXP_RANGE, "0.5,16384,0.5"), "set_radius", "get_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::CALLABLE, "map_func"), "set_map_func", "get_map_func");
 }
 
 void Box2DSDFShape::set_radius(real_t p_radius) {
@@ -771,10 +774,23 @@ real_t Box2DSDFShape::get_radius() const {
 	return sdfShape.m_radius * B2_TO_GD;
 }
 
-void Box2DSDFShape::draw(const RID &p_to_rid, const Color &p_color) {
+void Box2DSDFShape::set_map_func(Callable p_map_func) {
+	mapFunc = p_map_func;
+	emit_changed();
+}
+
+Callable Box2DSDFShape::get_map_func() const {
+	return mapFunc;
+}
+
+void Box2DSDFShape::draw(const RID &p_to_rid, const Viewport* p_viewport, const Color &p_color) {
 	Color c(p_color);
 	c.a *= 0.5;
-	draw_circle(p_to_rid, Vector2(0, 0), get_radius(), 24, c);
+	//draw_circle(p_to_rid, Vector2(0, 0), get_radius(), 24, c);
+
+	// This is going to be slow, but lets try and just render the sdf here.
+	RID test_tex = RenderingServer::get_singleton()->canvas_texture_create();
+	RenderingServer::get_singleton()->canvas_item_add_texture_rect(p_to_rid, p_viewport->get_visible_rect(), test_tex);
 }
 
 Box2DSDFShape::Box2DSDFShape() {

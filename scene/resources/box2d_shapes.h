@@ -2,6 +2,7 @@
 #define BOX2D_SHAPES_H
 
 #include <core/io/resource.h>
+#include <scene/main/viewport.h>
 
 #include <box2d/b2_chain_shape.h>
 #include <box2d/b2_circle_shape.h>
@@ -34,7 +35,7 @@ protected:
 public:
 	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
 
-	virtual void draw(const RID &p_to_rid, const Color &p_color) = 0;
+	virtual void draw(const RID &p_to_rid, const Viewport* p_viewport, const Color &p_color) = 0;
 
 	Box2DShape(){};
 	~Box2DShape(){};
@@ -54,7 +55,7 @@ public:
 	void set_radius(real_t p_radius);
 	real_t get_radius() const;
 
-	virtual void draw(const RID &p_to_rid, const Color &p_color) override;
+	virtual void draw(const RID &p_to_rid, const Viewport* p_viewport, const Color &p_color) override;
 
 	Box2DCircleShape();
 };
@@ -82,7 +83,7 @@ public:
 	void set_height(real_t p_height);
 	real_t get_height() const;
 
-	virtual void draw(const RID &p_to_rid, const Color &p_color) override;
+	virtual void draw(const RID &p_to_rid, const Viewport* p_viewport,  const Color &p_color) override;
 
 	Box2DRectShape();
 };
@@ -116,7 +117,7 @@ public:
 	void set_as_one_sided(const Vector2 &p_a_adj, const Vector2 &p_a, const Vector2 &p_b, const Vector2 &p_b_adj);
 	void set_as_two_sided(const Vector2 &p_a, const Vector2 &p_b);
 
-	virtual void draw(const RID &p_to_rid, const Color &p_color) override;
+	virtual void draw(const RID &p_to_rid, const Viewport* p_viewport,  const Color &p_color) override;
 
 	Box2DSegmentShape();
 };
@@ -172,7 +173,7 @@ public:
 	void set_invert_order(bool p_inverted);
 	bool get_invert_order() const;
 
-	virtual void draw(const RID &p_to_rid, const Color &p_color) override;
+	virtual void draw(const RID &p_to_rid, const Viewport* p_viewport,  const Color &p_color) override;
 
 	Box2DPolygonShape();
 	~Box2DPolygonShape();
@@ -208,7 +209,7 @@ public:
 	void set_radius(real_t p_radius);
 	real_t get_radius() const;
 
-	virtual void draw(const RID &p_to_rid, const Color &p_color) override;
+	virtual void draw(const RID &p_to_rid, const Viewport* p_viewport,  const Color &p_color) override;
 
 	Box2DCapsuleShape();
 };
@@ -217,6 +218,7 @@ class Box2DSDFShape : public Box2DShape {
 	GDCLASS(Box2DSDFShape, Box2DShape);
 
 	b2SDFShape sdfShape;
+	Callable mapFunc;
 
 	virtual const b2Shape *get_shape() const override { return &sdfShape; }
 
@@ -227,7 +229,10 @@ public:
 	void set_radius(real_t p_radius);
 	real_t get_radius() const;
 
-	virtual void draw(const RID &p_to_rid, const Color &p_color) override;
+	void set_map_func(Callable p_map_func);
+	Callable get_map_func() const;
+
+	virtual void draw(const RID &p_to_rid, const Viewport* p_viewport, const Color &p_color) override;
 
 	Box2DSDFShape();
 };
