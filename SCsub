@@ -38,6 +38,7 @@ box2d_src = [
 	"dynamics/b2_contact_solver.cpp",
 	"dynamics/b2_distance_joint.cpp",
 	"dynamics/b2_edge_circle_contact.cpp",
+	"dynamics/b2_sdf_circle_contact.cpp",
 	"dynamics/b2_edge_polygon_contact.cpp",
 	"dynamics/b2_fixture.cpp",
 	"dynamics/b2_friction_joint.cpp",

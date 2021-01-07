@@ -63,6 +63,12 @@ void Box2DFixture::create_b2Fixture(b2Fixture *&p_fixture_out, const b2FixtureDe
 			finalDef.shape = &shp;
 			p_fixture_out = body_node->body->CreateFixture(&finalDef); // Write here because shp is in scope
 		} break;
+		case b2Shape::Type::e_sdf: {
+			b2SDFShape shp = b2SDFShape(*dynamic_cast<const b2SDFShape *>(p_def.shape));
+			shp.m_p = gd_to_b2(p_shape_xform.xform(b2_to_gd(shp.m_p)));
+			finalDef.shape = &shp;
+			p_fixture_out = body_node->body->CreateFixture(&finalDef); // Write here because shp is in scope
+		} break;
 		default: {
 			ERR_FAIL();
 		} break;

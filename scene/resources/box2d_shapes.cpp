@@ -779,7 +779,19 @@ real_t Box2DSDFShape::get_radius() const {
 }
 
 void Box2DSDFShape::set_map_func(Callable p_map_func) {
+	print_line("Box2DSDFShape::set_map_func 1");
 	mapFunc = p_map_func;
+	sdfShape.m_map = [this](const b2Vec2& p){
+		Variant vec = Vector2(p.x, p.y);
+		const Variant* v = &vec;
+		
+		Callable::CallError ce;
+		Variant ret;
+		mapFunc.call(&v, 1, ret, ce);
+		float a = ret;
+		print_line(String("Box2DSDFShape::run map func: ") + rtos(a));
+		return a;
+	};
 	emit_changed();
 }
 
@@ -791,10 +803,11 @@ void Box2DSDFShape::draw(const RID &p_to_rid, const Viewport* p_viewport, const 
 	Color c(p_color);
 	c.a *= 0.5;
 	//draw_circle(p_to_rid, Vector2(0, 0), get_radius(), 24, c);
-
+	print_line(String("viewport rect: ") + rtos(p_viewport->get_visible_rect().size.width) + ":" + rtos(p_viewport->get_visible_rect().size.height) );
 	// This is going to be slow, but lets try and just render the sdf here.
 	RID test_tex = RenderingServer::get_singleton()->canvas_texture_create();
-	RenderingServer::get_singleton()->canvas_item_add_texture_rect(p_to_rid, p_viewport->get_visible_rect(), test_tex);
+	//RenderingServer::get_singleton()->canvas_item_add_texture_rect(p_to_rid, p_viewport->get_visible_rect(), test_tex);
+	RenderingServer::get_singleton()->canvas_item_add_texture_rect(p_to_rid, Rect2(0,0,1024,1024), test_tex);
 
 	
 	if(!debug_mat.is_valid()) {
