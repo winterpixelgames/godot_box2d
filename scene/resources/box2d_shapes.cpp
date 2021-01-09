@@ -759,24 +759,13 @@ Box2DCapsuleShape::Box2DCapsuleShape() {
 }
 
 void Box2DSDFShape::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &Box2DSDFShape::set_radius);
-	ClassDB::bind_method(D_METHOD("get_radius"), &Box2DSDFShape::get_radius);
 
 	ClassDB::bind_method(D_METHOD("set_map_func", "map_func"), &Box2DSDFShape::set_map_func);
 	ClassDB::bind_method(D_METHOD("get_map_func"), &Box2DSDFShape::get_map_func);
 
-	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "radius", PROPERTY_HINT_EXP_RANGE, "0.5,16384,0.5"), "set_radius", "get_radius");
 	ADD_PROPERTY(PropertyInfo(Variant::CALLABLE, "map_func"), "set_map_func", "get_map_func");
 }
 
-void Box2DSDFShape::set_radius(real_t p_radius) {
-	sdfShape.m_radius = MAX(p_radius * GD_TO_B2, b2_linearSlop);
-	emit_changed();
-}
-
-real_t Box2DSDFShape::get_radius() const {
-	return sdfShape.m_radius * B2_TO_GD;
-}
 
 void Box2DSDFShape::set_map_func(Callable p_map_func) {
 	print_line("Box2DSDFShape::set_map_func 1");
@@ -825,5 +814,5 @@ void Box2DSDFShape::draw(const RID &p_to_rid, const Viewport* p_viewport, const 
 }
 
 Box2DSDFShape::Box2DSDFShape() {
-	set_radius(10.0f);
+	
 }

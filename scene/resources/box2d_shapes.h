@@ -228,8 +228,6 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_radius(real_t p_radius);
-	real_t get_radius() const;
 
 	void set_map_func(Callable p_map_func);
 	Callable get_map_func() const;

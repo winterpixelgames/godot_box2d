@@ -183,9 +183,11 @@ void Box2DFixture::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
-			if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint()) {
-				break;
-			}
+			// Always on, Taken out for now for lldb breakpoint in child process
+			// TODO uncomment
+			//if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint()) {
+			//	break;
+			//}
 
 			Color draw_col;
 			if (!body_node || (body_node->get_type() == Box2DPhysicsBody::MODE_RIGID && body_node->get_mass() <= 0.0f)) {
