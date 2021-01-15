@@ -796,10 +796,10 @@ void Box2DSDFShape::draw(const RID &p_to_rid, const Viewport* p_viewport, const 
 	// This is going to be slow, but lets try and just render the sdf here.
 	RID test_tex = RenderingServer::get_singleton()->canvas_texture_create();
 	//RenderingServer::get_singleton()->canvas_item_add_texture_rect(p_to_rid, p_viewport->get_visible_rect(), test_tex);
+	//RenderingServer::get_singleton()->canvas_item_add_texture_rect(p_to_rid, Rect2(0,0,1024,1024), test_tex);
 	int width = ProjectSettings::get_singleton()->get("display/window/size/width");
 	int height = ProjectSettings::get_singleton()->get("display/window/size/height");
-	//RenderingServer::get_singleton()->canvas_item_add_texture_rect(p_to_rid, Rect2(0,0,width,height), test_tex);
-	RenderingServer::get_singleton()->canvas_item_add_texture_rect(p_to_rid, Rect2(0,0,1024,1024), test_tex);
+	RenderingServer::get_singleton()->canvas_item_add_texture_rect(p_to_rid, Rect2(0,0,width,height), test_tex);
 
 	
 	if(!debug_mat.is_valid()) {
@@ -810,6 +810,9 @@ void Box2DSDFShape::draw(const RID &p_to_rid, const Viewport* p_viewport, const 
 		shader->reload_from_file();
 		debug_mat = shader;
 	}
+
+	debug_mat->set_shader_param("time", 0.0);
+	debug_mat->set_shader_param("window_size", Vector2(width,height));
 
 	bool is_valid = debug_mat.is_valid();
 
