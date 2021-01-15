@@ -778,7 +778,7 @@ void Box2DSDFShape::set_map_func(Callable p_map_func) {
 		Variant ret;
 		mapFunc.call(&v, 1, ret, ce);
 		float a = ret;
-		print_line(String("Box2DSDFShape::run map func: ") + rtos(a));
+		//print_line(String("Box2DSDFShape::run map func: ") + rtos(a));
 		return a;
 	};
 	emit_changed();
@@ -796,6 +796,9 @@ void Box2DSDFShape::draw(const RID &p_to_rid, const Viewport* p_viewport, const 
 	// This is going to be slow, but lets try and just render the sdf here.
 	RID test_tex = RenderingServer::get_singleton()->canvas_texture_create();
 	//RenderingServer::get_singleton()->canvas_item_add_texture_rect(p_to_rid, p_viewport->get_visible_rect(), test_tex);
+	int width = ProjectSettings::get_singleton()->get("display/window/size/width");
+	int height = ProjectSettings::get_singleton()->get("display/window/size/height");
+	//RenderingServer::get_singleton()->canvas_item_add_texture_rect(p_to_rid, Rect2(0,0,width,height), test_tex);
 	RenderingServer::get_singleton()->canvas_item_add_texture_rect(p_to_rid, Rect2(0,0,1024,1024), test_tex);
 
 	
@@ -803,7 +806,7 @@ void Box2DSDFShape::draw(const RID &p_to_rid, const Viewport* p_viewport, const 
 		//TODO: figure out better way, testing only right now
 		Ref<ShaderMaterial> shader;
 		shader.instance();
-		shader->set_path("res://sdfs/sdf_map.tres");
+		shader->set_path("res://sdfs/sdf_map.tres", true);
 		shader->reload_from_file();
 		debug_mat = shader;
 	}
