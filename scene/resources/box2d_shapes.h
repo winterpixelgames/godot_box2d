@@ -32,8 +32,6 @@ class Box2DShape : public Resource {
 protected:
 	static void _bind_methods();
 
-	Ref<ShaderMaterial> debug_mat;
-
 public:
 	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
 
@@ -221,6 +219,9 @@ class Box2DSDFShape : public Box2DShape {
 
 	b2SDFShape sdfShape;
 	Callable mapFunc;
+	
+	Ref<ShaderMaterial> debug_mat;
+	Ref<Shader> debug_sdf_shader;
 
 	virtual const b2Shape *get_shape() const override { return &sdfShape; }
 
@@ -231,6 +232,9 @@ public:
 
 	void set_map_func(Callable p_map_func);
 	Callable get_map_func() const;
+
+	void set_debug_sdf_shader(const Ref<Shader> &p_shader);
+	Ref<Shader> get_debug_sdf_shader() const;
 
 	virtual void draw(const RID &p_to_rid, const Viewport* p_viewport, const Color &p_color) override;
 

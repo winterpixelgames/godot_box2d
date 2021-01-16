@@ -763,6 +763,10 @@ void Box2DSDFShape::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_map_func", "map_func"), &Box2DSDFShape::set_map_func);
 	ClassDB::bind_method(D_METHOD("get_map_func"), &Box2DSDFShape::get_map_func);
 
+	ClassDB::bind_method(D_METHOD("set_debug_sdf_shader", "debug_sdf_shader"), &Box2DSDFShape::set_debug_sdf_shader);
+	ClassDB::bind_method(D_METHOD("get_debug_sdf_shader"), &Box2DSDFShape::get_debug_sdf_shader);
+	
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "debug_sdf_shader", PROPERTY_HINT_RESOURCE_TYPE, "Shader"), "set_debug_sdf_shader", "get_debug_sdf_shader");
 	ADD_PROPERTY(PropertyInfo(Variant::CALLABLE, "map_func"), "set_map_func", "get_map_func");
 }
 
@@ -801,8 +805,14 @@ void Box2DSDFShape::draw(const RID &p_to_rid, const Viewport* p_viewport, const 
 	int height = ProjectSettings::get_singleton()->get("display/window/size/height");
 	RenderingServer::get_singleton()->canvas_item_add_texture_rect(p_to_rid, Rect2(0,0,width,height), test_tex);
 
-	
-	if(!debug_mat.is_valid()) {
+
+	if(debug_sdf_shader.is_valid()) {
+		Ref<ShaderMaterial> shader;
+		shader.instance();
+		shader->set_shader(debug_sdf_shader);
+		debug_mat = shader;
+	}
+	else if(!debug_mat.is_valid()) {
 		//TODO: figure out better way, testing only right now
 		Ref<ShaderMaterial> shader;
 		shader.instance();
@@ -811,8 +821,10 @@ void Box2DSDFShape::draw(const RID &p_to_rid, const Viewport* p_viewport, const 
 		debug_mat = shader;
 	}
 
-	debug_mat->set_shader_param("time", 0.0);
-	debug_mat->set_shader_param("window_size", Vector2(width,height));
+
+	debug_mat->set_shader_param("u_time", 0.0); // time
+	debug_mat->set_shader_param("u_window_size", Vector2(width,height)); // window size
+	debug_mat->set_shader_param("u_debug_test", 1.0); // 1.0 for debug
 
 	bool is_valid = debug_mat.is_valid();
 
@@ -821,4 +833,12 @@ void Box2DSDFShape::draw(const RID &p_to_rid, const Viewport* p_viewport, const 
 
 Box2DSDFShape::Box2DSDFShape() {
 	
+}
+
+void Box2DSDFShape::set_debug_sdf_shader(const Ref<Shader> &p_shader) {
+	debug_sdf_shader = p_shader;
+}
+
+Ref<Shader> Box2DSDFShape::get_debug_sdf_shader() const {
+	return debug_sdf_shader;
 }
