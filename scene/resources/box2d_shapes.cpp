@@ -775,7 +775,12 @@ void Box2DSDFShape::set_map_func(Callable p_map_func) {
 	print_line("Box2DSDFShape::set_map_func 1");
 	mapFunc = p_map_func;
 	sdfShape.m_map = [this](const b2Vec2& p){
-		Variant vec = Vector2(p.x, p.y);
+
+		// convert to godot
+		// TODO optimize better
+		float conversion =  ProjectSettings::get_singleton()->get("physics/2d/box2d_conversion_factor");
+
+		Variant vec = Vector2(p.x*conversion, p.y*conversion);
 		const Variant* v = &vec;
 		
 		Callable::CallError ce;
@@ -783,7 +788,9 @@ void Box2DSDFShape::set_map_func(Callable p_map_func) {
 		mapFunc.call(&v, 1, ret, ce);
 		float a = ret;
 		//print_line(String("Box2DSDFShape::run map func: ") + rtos(a));
-		return a;
+
+		// convert back to b2d
+		return a / conversion;
 	};
 	emit_changed();
 }
