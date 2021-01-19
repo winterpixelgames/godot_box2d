@@ -776,7 +776,7 @@ void Box2DSDFShape::_bind_methods() {
 void Box2DSDFShape::set_map_func(Callable p_map_func) {
 	print_line("Box2DSDFShape::set_map_func 1");
 	mapFunc = p_map_func;
-	sdfShape.m_map = [this](const b2Vec2& p){
+	sdfShape.m_map = [this](const b2Vec2& p) {
 
 		// convert to godot
 		// TODO optimize better
@@ -845,7 +845,10 @@ Box2DSDFShape::Box2DSDFShape() {
 }
 
 Vector2 Box2DSDFShape::gradient(const Vector2 p) {
-	b2Vec2 grad = sdfShape.Gradient(b2Vec2(p.x, p.y)); // coordiante space conversion is done in mapFunc
+	float conversion =  ProjectSettings::get_singleton()->get("physics/2d/box2d_conversion_factor");
+	Vector2 pb2d = Vector2(p.x/conversion, p.y/conversion);
+	//sdfShape.Gradient() // expected coordinates in b2d space
+	b2Vec2 grad = sdfShape.Gradient(b2Vec2(pb2d.x, pb2d.y)); 
 	return Vector2(grad.x, grad.y);
 }
 
