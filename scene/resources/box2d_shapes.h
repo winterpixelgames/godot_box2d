@@ -236,6 +236,8 @@ public:
 	void set_debug_sdf_shader(const Ref<Shader> &p_shader);
 	Ref<Shader> get_debug_sdf_shader() const;
 
+	Vector2 gradient(const Vector2 p);
+
 	virtual void draw(const RID &p_to_rid, const Viewport* p_viewport, const Color &p_color) override;
 
 	Box2DSDFShape();

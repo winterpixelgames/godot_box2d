@@ -766,6 +766,8 @@ void Box2DSDFShape::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_debug_sdf_shader", "debug_sdf_shader"), &Box2DSDFShape::set_debug_sdf_shader);
 	ClassDB::bind_method(D_METHOD("get_debug_sdf_shader"), &Box2DSDFShape::get_debug_sdf_shader);
 	
+	ClassDB::bind_method(D_METHOD("gradient"), &Box2DSDFShape::gradient);
+
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "debug_sdf_shader", PROPERTY_HINT_RESOURCE_TYPE, "Shader"), "set_debug_sdf_shader", "get_debug_sdf_shader");
 	ADD_PROPERTY(PropertyInfo(Variant::CALLABLE, "map_func"), "set_map_func", "get_map_func");
 }
@@ -829,7 +831,7 @@ void Box2DSDFShape::draw(const RID &p_to_rid, const Viewport* p_viewport, const 
 	}
 
 
-	debug_mat->set_shader_param("u_time", 0.0); // time
+	debug_mat->set_shader_param("u_time", 0.0); // time (how to get from application?)
 	debug_mat->set_shader_param("u_window_size", Vector2(width,height)); // window size
 	debug_mat->set_shader_param("u_debug_test", 1.0); // 1.0 for debug
 
@@ -840,6 +842,11 @@ void Box2DSDFShape::draw(const RID &p_to_rid, const Viewport* p_viewport, const 
 
 Box2DSDFShape::Box2DSDFShape() {
 	
+}
+
+Vector2 Box2DSDFShape::gradient(const Vector2 p) {
+	b2Vec2 grad = sdfShape.Gradient(b2Vec2(p.x, p.y)); // coordiante space conversion is done in mapFunc
+	return Vector2(grad.x, grad.y);
 }
 
 void Box2DSDFShape::set_debug_sdf_shader(const Ref<Shader> &p_shader) {
