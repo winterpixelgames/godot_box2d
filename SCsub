@@ -21,6 +21,7 @@ box2d_src = [
 	"collision/b2_dynamic_tree.cpp",
 	"collision/b2_edge_shape.cpp",
 	"collision/b2_polygon_shape.cpp",
+	"collision/b2_sdf_shape.cpp",
 	"collision/b2_time_of_impact.cpp",
 	"common/b2_block_allocator.cpp",
 	"common/b2_draw.cpp",
