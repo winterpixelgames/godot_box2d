@@ -2,6 +2,10 @@
 
 #include <core/project_settings.h>
 #include <servers/visual_server.h>
+#include <core/math/geometry_2d.h>
+#include <core/io/resource_loader.h>
+#include <servers/rendering_server.h>
+#include <scene/resources/shader.h>
 
 #include "../../util/box2d_types_converter.h"
 #include "../2d/box2d_fixtures.h"
@@ -106,7 +110,7 @@ real_t Box2DCircleShape::get_radius() const {
 	return circleShape.m_radius * B2_TO_GD;
 }
 
-void Box2DCircleShape::draw(const RID &p_to_rid, const Color &p_color) {
+void Box2DCircleShape::draw(const RID &p_to_rid, const Viewport* p_viewport, const Color &p_color) {
 	Color c(p_color);
 	c.a *= 0.5;
 	draw_circle(p_to_rid, Vector2(0, 0), get_radius(), 24, c);
@@ -163,7 +167,7 @@ real_t Box2DRectShape::get_height() const {
 	return height;
 }
 
-void Box2DRectShape::draw(const RID &p_to_rid, const Color &p_color) {
+void Box2DRectShape::draw(const RID &p_to_rid, const Viewport* p_viewport, const Color &p_color) {
 	Color c(p_color);
 	c.a *= 0.5;
 	draw_rect(p_to_rid, width, height, c);
@@ -256,7 +260,7 @@ void Box2DSegmentShape::set_as_two_sided(const Vector2 &p_a, const Vector2 &p_b)
 	emit_changed();
 }
 
-void Box2DSegmentShape::draw(const RID &p_to_rid, const Color &p_color) {
+void Box2DSegmentShape::draw(const RID &p_to_rid, const Viewport* p_viewport, const Color &p_color) {
 	const Vector2 a = get_a();
 	const Vector2 b = get_b();
 
@@ -609,7 +613,7 @@ bool Box2DPolygonShape::get_invert_order() const {
 	return invert_order;
 }
 
-void Box2DPolygonShape::draw(const RID &p_to_rid, const Color &p_color) {
+void Box2DPolygonShape::draw(const RID &p_to_rid, const Viewport* p_viewport, const Color &p_color) {
 	if (build_mode == BUILD_SOLIDS || build_mode == BUILD_OVERLAPPING_SOLIDS) {
 
 		int vertex_count = points.size();
@@ -734,7 +738,7 @@ real_t Box2DCapsuleShape::get_radius() const {
 	return radius;
 }
 
-void Box2DCapsuleShape::draw(const RID &p_to_rid, const Color &p_color) {
+void Box2DCapsuleShape::draw(const RID &p_to_rid, const Viewport* p_viewport, const Color &p_color) {
 	Color c(p_color);
 	c.a *= 0.5;
 
@@ -751,4 +755,106 @@ Box2DCapsuleShape::Box2DCapsuleShape() {
 
 	set_radius(10.0f);
 	set_height(20.0f);
+}
+
+void Box2DSDFShape::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("set_map_func", "map_func"), &Box2DSDFShape::set_map_func);
+	ClassDB::bind_method(D_METHOD("get_map_func"), &Box2DSDFShape::get_map_func);
+
+	ClassDB::bind_method(D_METHOD("set_debug_sdf_shader", "debug_sdf_shader"), &Box2DSDFShape::set_debug_sdf_shader);
+	ClassDB::bind_method(D_METHOD("get_debug_sdf_shader"), &Box2DSDFShape::get_debug_sdf_shader);
+	
+	ClassDB::bind_method(D_METHOD("gradient"), &Box2DSDFShape::gradient);
+
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "debug_sdf_shader", PROPERTY_HINT_RESOURCE_TYPE, "Shader"), "set_debug_sdf_shader", "get_debug_sdf_shader");
+	ADD_PROPERTY(PropertyInfo(Variant::CALLABLE, "map_func"), "set_map_func", "get_map_func");
+}
+
+
+void Box2DSDFShape::set_map_func(Callable p_map_func) {
+	print_line("Box2DSDFShape::set_map_func 1");
+	mapFunc = p_map_func;
+	sdfShape.m_map = [this](const b2Vec2& p) {
+
+		// convert to godot
+		// TODO optimize better
+		float conversion =  ProjectSettings::get_singleton()->get("physics/2d/box2d_conversion_factor");
+
+		Variant vec = Vector2(p.x*conversion, p.y*conversion);
+		const Variant* v = &vec;
+		
+		Callable::CallError ce;
+		Variant ret;
+		mapFunc.call(&v, 1, ret, ce);
+		float a = ret;
+		//print_line(String("Box2DSDFShape::run map func: ") + rtos(a));
+
+		// convert back to b2d
+		return a / conversion;
+	};
+	emit_changed();
+}
+
+Callable Box2DSDFShape::get_map_func() const {
+	return mapFunc;
+}
+
+void Box2DSDFShape::draw(const RID &p_to_rid, const Viewport* p_viewport, const Color &p_color) {
+	Color c(p_color);
+	c.a *= 0.5;
+	//draw_circle(p_to_rid, Vector2(0, 0), get_radius(), 24, c);
+	print_line(String("viewport rect: ") + rtos(p_viewport->get_visible_rect().size.width) + ":" + rtos(p_viewport->get_visible_rect().size.height) );
+	// This is going to be slow, but lets try and just render the sdf here.
+	RID test_tex = RenderingServer::get_singleton()->canvas_texture_create();
+	//RenderingServer::get_singleton()->canvas_item_add_texture_rect(p_to_rid, p_viewport->get_visible_rect(), test_tex);
+	//RenderingServer::get_singleton()->canvas_item_add_texture_rect(p_to_rid, Rect2(0,0,1024,1024), test_tex);
+	int width = ProjectSettings::get_singleton()->get("display/window/size/width");
+	int height = ProjectSettings::get_singleton()->get("display/window/size/height");
+	RenderingServer::get_singleton()->canvas_item_add_texture_rect(p_to_rid, Rect2(0,0,width,height), test_tex);
+
+
+	if(debug_sdf_shader.is_valid()) {
+		Ref<ShaderMaterial> shader;
+		shader.instance();
+		shader->set_shader(debug_sdf_shader);
+		debug_mat = shader;
+	}
+	else if(!debug_mat.is_valid()) {
+		//TODO: figure out better way, testing only right now
+		Ref<ShaderMaterial> shader;
+		shader.instance();
+		shader->set_path("res://sdfs/sdf_map.tres", true);
+		shader->reload_from_file();
+		debug_mat = shader;
+	}
+
+
+	debug_mat->set_shader_param("u_time", 0.0); // time (how to get from application?)
+	debug_mat->set_shader_param("u_window_size", Vector2(width,height)); // window size
+	debug_mat->set_shader_param("u_debug_test", 1.0); // 1.0 for debug
+
+	bool is_valid = debug_mat.is_valid();
+
+	RenderingServer::get_singleton()->canvas_item_set_material(p_to_rid, debug_mat->get_rid());
+}
+
+Box2DSDFShape::Box2DSDFShape() {
+	
+}
+
+Vector2 Box2DSDFShape::gradient(const Vector2 p) {
+	float conversion =  ProjectSettings::get_singleton()->get("physics/2d/box2d_conversion_factor");
+	Vector2 pb2d = Vector2(p.x/conversion, p.y/conversion);
+	//sdfShape.Gradient() // expected coordinates in b2d space
+	b2Vec2 grad = sdfShape.Gradient(b2Vec2(pb2d.x, pb2d.y)); 
+	return Vector2(grad.x, grad.y);
+}
+
+void Box2DSDFShape::set_debug_sdf_shader(const Ref<Shader> &p_shader) {
+	debug_sdf_shader = p_shader;
+}
+
+Ref<Shader> Box2DSDFShape::get_debug_sdf_shader() const {
+	return debug_sdf_shader;
 }

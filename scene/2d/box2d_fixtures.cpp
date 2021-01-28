@@ -63,6 +63,12 @@ void Box2DFixture::create_b2Fixture(b2Fixture *&p_fixture_out, const b2FixtureDe
 			finalDef.shape = &shp;
 			p_fixture_out = body_node->body->CreateFixture(&finalDef); // Write here because shp is in scope
 		} break;
+		case b2Shape::Type::e_sdf: {
+			b2SDFShape shp = b2SDFShape(*dynamic_cast<const b2SDFShape *>(p_def.shape));
+			shp.m_p = gd_to_b2(p_shape_xform.xform(b2_to_gd(shp.m_p)));
+			finalDef.shape = &shp;
+			p_fixture_out = body_node->body->CreateFixture(&finalDef); // Write here because shp is in scope
+		} break;
 		default: {
 			ERR_FAIL();
 		} break;
@@ -172,9 +178,11 @@ void Box2DFixture::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
-			if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint()) {
-				break;
-			}
+			// Always on, Taken out for now for lldb breakpoint in child process
+			// TODO uncomment
+			//if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint()) {
+			//	break;
+			//}
 
 			Color draw_col;
 			if (!body_node || (body_node->get_type() == Box2DPhysicsBody::MODE_RIGID && body_node->get_mass() <= 0.0f)) {
@@ -196,7 +204,7 @@ void Box2DFixture::_notification(int p_what) {
 			}
 
 			if (shape.is_valid()) {
-				shape->draw(get_canvas_item(), draw_col);
+				shape->draw(get_canvas_item(), get_viewport(), draw_col);
 			}
 		} break;
 	}
