@@ -66,8 +66,32 @@ void Box2DFixture::create_b2Fixture(b2Fixture *&p_fixture_out, const b2FixtureDe
 		case b2Shape::Type::e_sdf: {
 			b2SDFShape shp = b2SDFShape(*dynamic_cast<const b2SDFShape *>(p_def.shape));
 			shp.m_p = gd_to_b2(p_shape_xform.xform(b2_to_gd(shp.m_p)));
+			
+			shp.m_map = [this](const b2Vec2& p) {
+				// convert to godot
+				// TODO optimize better
+				float conversion =  ProjectSettings::get_singleton()->get("physics/2d/box2d_conversion_factor");
+
+				Variant vec = Vector2(p.x*conversion, p.y*conversion);
+				const Variant* v = &vec;
+				
+				float a = this->call("sdf_map", vec);
+				/*
+				Callable::CallError ce;
+				Variant ret;
+				mapFunc.call(&v, 1, ret, ce);
+				float a = ret;
+				*/
+				//print_line(String("Box2DSDFShape::run map func: ") + rtos(a));
+
+				// convert back to b2d
+				return a / conversion;
+			};
+
 			finalDef.shape = &shp;
 			p_fixture_out = body_node->body->CreateFixture(&finalDef); // Write here because shp is in scope
+
+
 		} break;
 		default: {
 			ERR_FAIL();
@@ -254,6 +278,8 @@ void Box2DFixture::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_parent_exceptions"), "set_use_parent_exceptions", "get_use_parent_exceptions");
 
 	ADD_SIGNAL(MethodInfo("_shape_type_changed"));
+
+	ClassDB::add_virtual_method(get_class_static(), MethodInfo(Variant::REAL, "sdf_map", PropertyInfo(Variant::VECTOR2, "p")));
 }
 
 void Box2DFixture::update_shape() {
