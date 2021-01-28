@@ -2,9 +2,9 @@
 
 #include <core/project_settings.h>
 #include <servers/visual_server.h>
-#include <core/math/geometry_2d.h>
+#include <core/math/geometry.h>
 #include <core/io/resource_loader.h>
-#include <servers/rendering_server.h>
+#include <servers/visual_server.h>
 #include <scene/resources/shader.h>
 
 #include "../../util/box2d_types_converter.h"
@@ -759,8 +759,8 @@ Box2DCapsuleShape::Box2DCapsuleShape() {
 
 void Box2DSDFShape::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_map_func", "map_func"), &Box2DSDFShape::set_map_func);
-	ClassDB::bind_method(D_METHOD("get_map_func"), &Box2DSDFShape::get_map_func);
+	//ClassDB::bind_method(D_METHOD("set_map_func", "map_func"), &Box2DSDFShape::set_map_func);
+	//ClassDB::bind_method(D_METHOD("get_map_func"), &Box2DSDFShape::get_map_func);
 
 	ClassDB::bind_method(D_METHOD("set_debug_sdf_shader", "debug_sdf_shader"), &Box2DSDFShape::set_debug_sdf_shader);
 	ClassDB::bind_method(D_METHOD("get_debug_sdf_shader"), &Box2DSDFShape::get_debug_sdf_shader);
@@ -768,10 +768,10 @@ void Box2DSDFShape::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("gradient"), &Box2DSDFShape::gradient);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "debug_sdf_shader", PROPERTY_HINT_RESOURCE_TYPE, "Shader"), "set_debug_sdf_shader", "get_debug_sdf_shader");
-	ADD_PROPERTY(PropertyInfo(Variant::CALLABLE, "map_func"), "set_map_func", "get_map_func");
+	//ADD_PROPERTY(PropertyInfo(Variant::CALLABLE, "map_func"), "set_map_func", "get_map_func");
 }
 
-
+/*
 void Box2DSDFShape::set_map_func(Callable p_map_func) {
 	print_line("Box2DSDFShape::set_map_func 1");
 	mapFunc = p_map_func;
@@ -799,6 +799,7 @@ void Box2DSDFShape::set_map_func(Callable p_map_func) {
 Callable Box2DSDFShape::get_map_func() const {
 	return mapFunc;
 }
+*/
 
 void Box2DSDFShape::draw(const RID &p_to_rid, const Viewport* p_viewport, const Color &p_color) {
 	Color c(p_color);
@@ -806,12 +807,12 @@ void Box2DSDFShape::draw(const RID &p_to_rid, const Viewport* p_viewport, const 
 	//draw_circle(p_to_rid, Vector2(0, 0), get_radius(), 24, c);
 	print_line(String("viewport rect: ") + rtos(p_viewport->get_visible_rect().size.width) + ":" + rtos(p_viewport->get_visible_rect().size.height) );
 	// This is going to be slow, but lets try and just render the sdf here.
-	RID test_tex = RenderingServer::get_singleton()->canvas_texture_create();
+	RID test_tex = VisualServer::get_singleton()->texture_create();
 	//RenderingServer::get_singleton()->canvas_item_add_texture_rect(p_to_rid, p_viewport->get_visible_rect(), test_tex);
 	//RenderingServer::get_singleton()->canvas_item_add_texture_rect(p_to_rid, Rect2(0,0,1024,1024), test_tex);
 	int width = ProjectSettings::get_singleton()->get("display/window/size/width");
 	int height = ProjectSettings::get_singleton()->get("display/window/size/height");
-	RenderingServer::get_singleton()->canvas_item_add_texture_rect(p_to_rid, Rect2(0,0,width,height), test_tex);
+	VisualServer::get_singleton()->canvas_item_add_texture_rect(p_to_rid, Rect2(0,0,width,height), test_tex);
 
 
 	if(debug_sdf_shader.is_valid()) {
@@ -836,7 +837,7 @@ void Box2DSDFShape::draw(const RID &p_to_rid, const Viewport* p_viewport, const 
 
 	bool is_valid = debug_mat.is_valid();
 
-	RenderingServer::get_singleton()->canvas_item_set_material(p_to_rid, debug_mat->get_rid());
+	VisualServer::get_singleton()->canvas_item_set_material(p_to_rid, debug_mat->get_rid());
 }
 
 Box2DSDFShape::Box2DSDFShape() {

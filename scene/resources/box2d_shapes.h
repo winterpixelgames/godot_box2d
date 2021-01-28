@@ -218,7 +218,7 @@ class Box2DSDFShape : public Box2DShape {
 	GDCLASS(Box2DSDFShape, Box2DShape);
 
 	b2SDFShape sdfShape;
-	Callable mapFunc;
+	//Callable mapFunc;
 	
 	Ref<ShaderMaterial> debug_mat;
 	Ref<Shader> debug_sdf_shader;
@@ -230,8 +230,8 @@ protected:
 
 public:
 
-	void set_map_func(Callable p_map_func);
-	Callable get_map_func() const;
+	//void set_map_func(Callable p_map_func);
+	//Callable get_map_func() const;
 
 	void set_debug_sdf_shader(const Ref<Shader> &p_shader);
 	Ref<Shader> get_debug_sdf_shader() const;
