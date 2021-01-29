@@ -27,6 +27,8 @@ void Box2DPolygonEditor::_set_node(Node *p_polygon) {
 
 	if (node) {
 		node->connect("_shape_type_changed", this, "_shape_type_changed", Vector<Variant>(), CONNECT_DEFERRED);
+	if (node->get_shape().is_valid()) {
+		}
 	}
 }
 

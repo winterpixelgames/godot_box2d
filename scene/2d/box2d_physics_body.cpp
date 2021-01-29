@@ -5,6 +5,8 @@
 #include "box2d_fixtures.h"
 #include "box2d_joints.h"
 
+#include <vector>
+
 /**
 * @author Brian Semrau
 */
@@ -85,30 +87,53 @@ void Box2DPhysicsBody::update_filterdata() {
 }
 
 Transform2D Box2DPhysicsBody::get_box2dworld_transform() {
-#ifdef DEBUG_ENABLED
-	ERR_FAIL_COND_V(!world_node, get_global_transform());
-#endif
-	return get_relative_transform_to_parent(world_node);
+	std::vector<Transform2D> transforms{};
+	transforms.push_back(get_transform());
+	Node* parent = get_parent();
+	while(parent) {
+		if(parent == world_node) {
+			break;
+		}
+		CanvasItem* cv = Object::cast_to<CanvasItem>(parent);
+		if(cv) {
+			transforms.push_back(cv->get_transform());
+		}
+		parent = parent->get_parent();
+	}
+
+	Transform2D returned{};
+	while(transforms.size() > 0) {
+		returned = returned * transforms.back();
+		transforms.pop_back();
+	}
+
+	return returned;
 }
 
 void Box2DPhysicsBody::set_box2dworld_transform(const Transform2D &p_transform) {
-
-	CanvasItem *pi = get_parent_item();
-	if (pi) {
-		set_transform(pi->get_global_transform().affine_inverse() * p_transform);
-	} else {
-		set_transform(p_transform);
+	std::vector<Transform2D> transforms{};
+	transforms.push_back(p_transform);
+	Node* parent = get_parent();
+	while(parent) {
+		if(parent == world_node) {
+			break;
+		}
+		CanvasItem* cv = Object::cast_to<CanvasItem>(parent);
+		if(cv) {
+			transforms.push_back(cv->get_transform().affine_inverse());
+		}
+		parent = parent->get_parent();
 	}
 
-	Node2D *parent_2d = Object::cast_to<Node2D>(get_parent());
-	if(!parent_2d) {
-		ERR_PRINT("Unsupported Node in between physics world and physics body");
-		return;
+	Transform2D target_xform{};
+	while(transforms.size() > 0) {
+		target_xform = target_xform * transforms.back();
+		transforms.pop_back();
 	}
-	set_transform(parent_2d->get_relative_transform_to_parent(world_node).affine_inverse() * p_transform);
+	set_transform(target_xform);
 }
 
-void Box2DPhysicsBody::state_changed() {
+void Box2DPhysicsBody::sync_state() {
 	set_block_transform_notify(true);
 	set_box2dworld_transform(b2_to_gd(body->GetTransform()));
 	set_block_transform_notify(false);
@@ -217,28 +242,24 @@ void Box2DPhysicsBody::_notification(int p_what) {
 			}
 		} break;
 
-		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
-			if (Engine::get_singleton()->is_editor_hint()) {
-				break;
-			}
+		case Box2DWorld::NOTIFICATION_WORLD_STEPPED: {
+			if (body) {
+				const bool awake = body->IsAwake();
+				if (awake != prev_sleeping_state) {
+					emit_signal("sleeping_state_changed");
+					prev_sleeping_state = awake;
+				}
+				const bool enabled = body->IsEnabled();
+				if (enabled != prev_enabled_state) {
+					emit_signal("enabled_state_changed");
+				}
 
-			// TODO figure out if this can instead be a callback from Box2D.
-			//		I don't think it can.
-			const bool awake = body->IsAwake();
-			if (awake != prev_sleeping_state) {
-				emit_signal("sleeping_state_changed");
-				prev_sleeping_state = awake;
-			}
-
-			if (body && awake) {
-				state_changed();
+				sync_state();
 			}
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			if (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_collisions_hint()) {
-				update();
-			}
+			// Do nothing
 		} break;
 
 		case NOTIFICATION_DRAW: {
@@ -246,6 +267,9 @@ void Box2DPhysicsBody::_notification(int p_what) {
 				break;
 			}
 
+			// TODO discuss how to put back in.  But does this just show contact points during simulation?
+			
+			/*
 			if (body) {
 				b2ContactEdge *ce = body->GetContactList();
 				while (ce) {
@@ -260,6 +284,7 @@ void Box2DPhysicsBody::_notification(int p_what) {
 					ce = ce->next;
 				}
 			}
+			*/
 		}
 	}
 }
@@ -366,6 +391,7 @@ void Box2DPhysicsBody::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("body_entered", PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("body_exited", PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("sleeping_state_changed"));
+	ADD_SIGNAL(MethodInfo("enabled_state_changed"));
 
 	BIND_ENUM_CONSTANT(MODE_RIGID);
 	BIND_ENUM_CONSTANT(MODE_STATIC);
@@ -486,18 +512,25 @@ void Box2DPhysicsBody::set_custom_mass_data(const real_t p_mass, const real_t p_
 }
 
 real_t Box2DPhysicsBody::get_mass() const {
-	ERR_FAIL_COND_V(!body, real_t());
-	return body->GetMass();
+	if(body) {
+		return body->GetMass();
+	}
+	return 1.0f; // if there is no body, we can safely return a default mass
 }
 
 real_t Box2DPhysicsBody::get_inertia() const {
-	ERR_FAIL_COND_V(!body, real_t());
-	return body->GetInertia();
+	if(body) {
+		return body->GetInertia();
+	}
+	return 1.0f;  // if there is no body, we can safely return a default mass
 }
 
 Vector2 Box2DPhysicsBody::get_center_of_mass() const {
-	ERR_FAIL_COND_V(!body, Vector2());
-	return b2_to_gd(body->GetLocalCenter());
+	if(body) {
+		return b2_to_gd(body->GetLocalCenter());
+	}
+	
+	return Vector2(0,0);
 }
 
 void Box2DPhysicsBody::set_linear_damping(real_t p_damping) {

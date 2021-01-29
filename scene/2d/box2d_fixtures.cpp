@@ -170,9 +170,16 @@ void Box2DFixture::_notification(int p_what) {
 
 			// If new parent, recreate fixture
 			if (body_node != new_body) {
+				if(body_node) {
+					body_node->disconnect("sleeping_state_changed", this, "update");
+					body_node->disconnect("enabled_state_changed", this, "update");
+				}
 				destroy_b2();
 
 				body_node = new_body;
+
+				body_node->connect("sleeping_state_changed", this, "update");
+				body_node->connect("enabled_state_changed", this, "update");
 
 				if (body_node && body_node->body && shape.is_valid()) {
 					create_b2();
@@ -196,9 +203,7 @@ void Box2DFixture::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_INTERNAL_PROCESS: {
-			if (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_collisions_hint()) {
-				update();
-			}
+			// Do nothing
 		} break;
 
 		case NOTIFICATION_DRAW: {

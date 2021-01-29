@@ -1,9 +1,9 @@
 #ifndef BOX2D_WORLD_H
 #define BOX2D_WORLD_H
 
+#include <core/resource.h>
 #include <core/object.h>
 #include <core/reference.h>
-#include <core/resource.h>
 #include <scene/2d/node_2d.h>
 
 #include <box2d/b2_contact.h>
@@ -13,6 +13,8 @@
 #include <box2d/b2_world_callbacks.h>
 
 #include "../../util/box2d_types_converter.h"
+
+#include <list>
 
 /**
 * @author Brian Semrau
@@ -123,6 +125,22 @@ private:
 		virtual bool ReportFixture(b2Fixture *fixture) override;
 	};
 
+	class GodotSignalCaller {
+		public:
+		String signal_name{""};
+		Node* obj_emitter{nullptr};
+		Node* obj_a{nullptr};
+		Node* obj_b{nullptr};
+
+		GodotSignalCaller(const String &p_signal_name, Node* p_obj_emitter, Node* p_obja, Node* p_objb) {
+			obj_emitter = p_obj_emitter;
+			signal_name = p_signal_name;
+			obj_a = p_obja;
+			obj_b = p_objb;
+		}
+
+	};
+
 	class IntersectPointCallback : public b2QueryCallback {
 	public:
 		Vector<b2Fixture *> results;
@@ -138,6 +156,8 @@ private:
 	Vector2 gravity;
 	bool auto_step{true};
 	b2World *world;
+
+	std::list<GodotSignalCaller> collision_callback_queue{};
 
 	Set<Box2DPhysicsBody *> bodies;
 	Set<Box2DJoint *> joints;
@@ -176,7 +196,13 @@ protected:
 	static void _bind_methods();
 
 public:
-	void step(real_t p_step);
+
+
+	enum {
+		NOTIFICATION_WORLD_STEPPED = 42300, // special int that shouldn't clobber other notifications.  See node.h
+	};
+
+	void step(float p_step);
 
 	void set_gravity(const Vector2 &gravity);
 	Vector2 get_gravity() const;

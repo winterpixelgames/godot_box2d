@@ -7,6 +7,7 @@
 #include <servers/visual_server.h>
 #include <scene/resources/shader.h>
 
+
 #include "../../util/box2d_types_converter.h"
 #include "../2d/box2d_fixtures.h"
 
@@ -714,7 +715,7 @@ void Box2DCapsuleShape::set_height(real_t p_height) {
 	const float hy = p_height * GD_TO_B2 * 0.5f;
 	topCircleShape.m_p.y = -hy;
 	bottomCircleShape.m_p.y = hy;
-	rectShape.SetAsBox(radius, hy);
+	rectShape.SetAsBox(hy, hy);
 
 	emit_changed();
 }
@@ -729,7 +730,7 @@ void Box2DCapsuleShape::set_radius(real_t p_radius) {
 	const float r = MAX(p_radius * GD_TO_B2, b2_linearSlop);
 	topCircleShape.m_radius = r;
 	bottomCircleShape.m_radius = r;
-	rectShape.SetAsBox(radius, height * GD_TO_B2 * 0.5f);
+	rectShape.SetAsBox(r, height * GD_TO_B2 * 0.5f);
 
 	emit_changed();
 }
@@ -808,8 +809,8 @@ void Box2DSDFShape::draw(const RID &p_to_rid, const Viewport* p_viewport, const 
 	//print_line(String("viewport rect: ") + rtos(p_viewport->get_visible_rect().size.width) + ":" + rtos(p_viewport->get_visible_rect().size.height) );
 	// This is going to be slow, but lets try and just render the sdf here.
 	RID test_tex = VisualServer::get_singleton()->texture_create();
-	//RenderingServer::get_singleton()->canvas_item_add_texture_rect(p_to_rid, p_viewport->get_visible_rect(), test_tex);
-	//RenderingServer::get_singleton()->canvas_item_add_texture_rect(p_to_rid, Rect2(0,0,1024,1024), test_tex);
+	//VisualServer::get_singleton()->canvas_item_add_texture_rect(p_to_rid, p_viewport->get_visible_rect(), test_tex);
+	//VisualServer::get_singleton()->canvas_item_add_texture_rect(p_to_rid, Rect2(0,0,1024,1024), test_tex);
 	int width = ProjectSettings::get_singleton()->get("display/window/size/width");
 	int height = ProjectSettings::get_singleton()->get("display/window/size/height");
 	VisualServer::get_singleton()->canvas_item_add_texture_rect(p_to_rid, Rect2(0,0,width,height), test_tex);
