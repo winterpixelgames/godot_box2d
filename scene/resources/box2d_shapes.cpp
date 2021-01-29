@@ -805,7 +805,7 @@ void Box2DSDFShape::draw(const RID &p_to_rid, const Viewport* p_viewport, const 
 	Color c(p_color);
 	c.a *= 0.5;
 	//draw_circle(p_to_rid, Vector2(0, 0), get_radius(), 24, c);
-	print_line(String("viewport rect: ") + rtos(p_viewport->get_visible_rect().size.width) + ":" + rtos(p_viewport->get_visible_rect().size.height) );
+	//print_line(String("viewport rect: ") + rtos(p_viewport->get_visible_rect().size.width) + ":" + rtos(p_viewport->get_visible_rect().size.height) );
 	// This is going to be slow, but lets try and just render the sdf here.
 	RID test_tex = VisualServer::get_singleton()->texture_create();
 	//RenderingServer::get_singleton()->canvas_item_add_texture_rect(p_to_rid, p_viewport->get_visible_rect(), test_tex);
