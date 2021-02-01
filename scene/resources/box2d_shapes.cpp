@@ -769,57 +769,16 @@ void Box2DSDFShape::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("gradient"), &Box2DSDFShape::gradient);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "debug_sdf_shader", PROPERTY_HINT_RESOURCE_TYPE, "Shader"), "set_debug_sdf_shader", "get_debug_sdf_shader");
-	//ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "map_func"), "set_map_func", "get_map_func");
 }
 
-
-
 void Box2DSDFShape::set_map_func() {
-	print_line("Box2DSDFShape::set_map_func 1");
-	assert(mapFunc);
+	//print_line("Box2DSDFShape::set_map_func");
+	assert(mapFunc); // this always needs to be set
 	
-	sdfShape.m_map = [this](const b2Vec2& p) {
-
-		// convert to godot
-		// TODO optimize better
-		float conversion =  ProjectSettings::get_singleton()->get("physics/2d/box2d_conversion_factor");
-
+	float conversion =  ProjectSettings::get_singleton()->get("physics/2d/box2d_conversion_factor");
+	sdfShape.m_map = [this, conversion](const b2Vec2& p) {
 		Variant vec = Vector2(p.x*conversion, p.y*conversion);
-		const Variant* v = &vec;
-
-		//Node2D* node = this->get_
-		
-		float a = mapFunc->call("sdf_map", vec);
-		/*
-		Callable::CallError ce;
-		Variant ret;
-		mapFunc.call(&v, 1, ret, ce);
-		float a = ret;
-		*/
-		//print_line(String("Box2DSDFShape::run map func: ") + rtos(a));
-
-		// convert back to b2d
-		return a / conversion;
-		//return 0.0;
-
-
-		/*
-		// convert to godot
-		// TODO optimize better
-		float conversion =  ProjectSettings::get_singleton()->get("physics/2d/box2d_conversion_factor");
-
-		Variant vec = Vector2(p.x*conversion, p.y*conversion);
-		const Variant* v = &vec;
-		
-		Callable::CallError ce;
-		Variant ret;
-		mapFunc.call(&v, 1, ret, ce);
-		float a = ret;
-		//print_line(String("Box2DSDFShape::run map func: ") + rtos(a));
-
-		// convert back to b2d
-		return a / conversion;
-		*/
+		return mapFunc->sdf_map(vec) / conversion;
 	};
 	emit_changed();
 }

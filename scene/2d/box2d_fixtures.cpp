@@ -284,6 +284,12 @@ void Box2DFixture::update_filterdata() {
 	}
 }
 
+float Box2DFixture::sdf_map(Vector2 p) {
+	if (get_script_instance()) {
+		return get_script_instance()->call("sdf_map", p);
+	}
+}
+
 #ifdef TOOLS_ENABLED
 bool Box2DFixture::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
 	if (!shape.is_valid())
