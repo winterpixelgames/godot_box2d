@@ -152,12 +152,50 @@ private:
 		virtual bool ReportFixture(b2Fixture *fixture) override;
 	};
 
+	class Box2dCollisionCallbackQueue  {
+	private:
+		b2World *world{nullptr};
+		std::list<GodotSignalCaller> collision_callback_queue{};
+	public:
+		inline void set_world(b2World *p) {
+			world = p;
+		}
+
+		inline bool empty() {
+			return collision_callback_queue.empty();
+		}
+		
+		inline GodotSignalCaller& front() {
+			return collision_callback_queue.front();
+		}
+
+		inline void pop_front() {
+			collision_callback_queue.pop_front();
+		}
+
+		inline void push_back(GodotSignalCaller&& sig) {
+			assert(world);
+			if(world->IsLocked()) {
+				collision_callback_queue.push_back(sig);
+			}
+			else {
+				// Run the signal immediately.
+				if(sig.obj_b) {
+					sig.obj_emitter->emit_signal(sig.signal_name, sig.obj_a, sig.obj_b);
+				}
+				else {
+					sig.obj_emitter->emit_signal(sig.signal_name, sig.obj_a);
+				}
+			}
+		}
+	};
+
 private:
 	Vector2 gravity;
 	bool auto_step{true};
 	b2World *world;
 
-	std::list<GodotSignalCaller> collision_callback_queue{};
+	Box2dCollisionCallbackQueue collision_callback_queue{};
 
 	Set<Box2DPhysicsBody *> bodies;
 	Set<Box2DJoint *> joints;

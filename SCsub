@@ -81,6 +81,10 @@ thirdparty_include.append(["#modules/godot_box2d/b2include/"])
 env_godot_box2d.Prepend(CPPPATH=thirdparty_include)
 env_godot_box2d.Append(CPPDEFINES=["B2_USER_SETTINGS"])
 
+# too many warnings with new compiler, GDCLASS macros etc... -Winconsistent-missing-override in base classes
+# enable in future and correct
+env_godot_box2d.disable_warnings()
+
 # Configure Box2D build environment
 env_thirdparty = env_godot_box2d.Clone()
 env_thirdparty.disable_warnings()
