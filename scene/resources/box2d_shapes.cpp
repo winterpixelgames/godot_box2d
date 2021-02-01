@@ -760,8 +760,8 @@ Box2DCapsuleShape::Box2DCapsuleShape() {
 
 void Box2DSDFShape::_bind_methods() {
 
-	//ClassDB::bind_method(D_METHOD("set_map_func", "map_func"), &Box2DSDFShape::set_map_func);
-	//ClassDB::bind_method(D_METHOD("get_map_func"), &Box2DSDFShape::get_map_func);
+	ClassDB::bind_method(D_METHOD("set_map_func"), &Box2DSDFShape::set_map_func);
+	ClassDB::bind_method(D_METHOD("get_map_func"), &Box2DSDFShape::get_map_func);
 
 	ClassDB::bind_method(D_METHOD("set_debug_sdf_shader", "debug_sdf_shader"), &Box2DSDFShape::set_debug_sdf_shader);
 	ClassDB::bind_method(D_METHOD("get_debug_sdf_shader"), &Box2DSDFShape::get_debug_sdf_shader);
@@ -769,15 +769,41 @@ void Box2DSDFShape::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("gradient"), &Box2DSDFShape::gradient);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "debug_sdf_shader", PROPERTY_HINT_RESOURCE_TYPE, "Shader"), "set_debug_sdf_shader", "get_debug_sdf_shader");
-	//ADD_PROPERTY(PropertyInfo(Variant::CALLABLE, "map_func"), "set_map_func", "get_map_func");
+	//ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "map_func"), "set_map_func", "get_map_func");
 }
 
-/*
-void Box2DSDFShape::set_map_func(Callable p_map_func) {
+
+
+void Box2DSDFShape::set_map_func() {
 	print_line("Box2DSDFShape::set_map_func 1");
-	mapFunc = p_map_func;
+	assert(mapFunc);
+	
 	sdfShape.m_map = [this](const b2Vec2& p) {
 
+		// convert to godot
+		// TODO optimize better
+		float conversion =  ProjectSettings::get_singleton()->get("physics/2d/box2d_conversion_factor");
+
+		Variant vec = Vector2(p.x*conversion, p.y*conversion);
+		const Variant* v = &vec;
+
+		//Node2D* node = this->get_
+		
+		float a = mapFunc->call("sdf_map", vec);
+		/*
+		Callable::CallError ce;
+		Variant ret;
+		mapFunc.call(&v, 1, ret, ce);
+		float a = ret;
+		*/
+		//print_line(String("Box2DSDFShape::run map func: ") + rtos(a));
+
+		// convert back to b2d
+		return a / conversion;
+		//return 0.0;
+
+
+		/*
 		// convert to godot
 		// TODO optimize better
 		float conversion =  ProjectSettings::get_singleton()->get("physics/2d/box2d_conversion_factor");
@@ -793,14 +819,15 @@ void Box2DSDFShape::set_map_func(Callable p_map_func) {
 
 		// convert back to b2d
 		return a / conversion;
+		*/
 	};
 	emit_changed();
 }
 
-Callable Box2DSDFShape::get_map_func() const {
-	return mapFunc;
+void Box2DSDFShape::get_map_func() const {
+	// do nothing
 }
-*/
+
 
 void Box2DSDFShape::draw(const RID &p_to_rid, const Viewport* p_viewport, const Color &p_color) {
 	Color c(p_color);

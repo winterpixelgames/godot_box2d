@@ -2,7 +2,9 @@
 #define BOX2D_SHAPES_H
 
 #include <core/resource.h>
+#include <core/func_ref.h>
 #include <scene/main/viewport.h>
+#include <scene/2d/node_2d.h>
 
 #include <box2d/b2_chain_shape.h>
 #include <box2d/b2_circle_shape.h>
@@ -214,11 +216,13 @@ public:
 	Box2DCapsuleShape();
 };
 
+class Box2DFixture;
 class Box2DSDFShape : public Box2DShape {
 	GDCLASS(Box2DSDFShape, Box2DShape);
 
 	b2SDFShape sdfShape;
-	//Callable mapFunc;
+	//Box2DFixture* mapFunc;
+	//NodePath mapFunc;
 	
 	Ref<ShaderMaterial> debug_mat;
 	Ref<Shader> debug_sdf_shader;
@@ -229,9 +233,10 @@ protected:
 	static void _bind_methods();
 
 public:
+	Box2DFixture* mapFunc{nullptr};
 
-	//void set_map_func(Callable p_map_func);
-	//Callable get_map_func() const;
+	void set_map_func();
+	void get_map_func() const;
 
 	void set_debug_sdf_shader(const Ref<Shader> &p_shader);
 	Ref<Shader> get_debug_sdf_shader() const;

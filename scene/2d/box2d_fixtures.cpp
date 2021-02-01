@@ -66,32 +66,8 @@ void Box2DFixture::create_b2Fixture(b2Fixture *&p_fixture_out, const b2FixtureDe
 		case b2Shape::Type::e_sdf: {
 			b2SDFShape shp = b2SDFShape(*dynamic_cast<const b2SDFShape *>(p_def.shape));
 			shp.m_p = gd_to_b2(p_shape_xform.xform(b2_to_gd(shp.m_p)));
-			
-			shp.m_map = [this](const b2Vec2& p) {
-				// convert to godot
-				// TODO optimize better
-				float conversion =  ProjectSettings::get_singleton()->get("physics/2d/box2d_conversion_factor");
-
-				Variant vec = Vector2(p.x*conversion, p.y*conversion);
-				const Variant* v = &vec;
-				
-				float a = this->call("sdf_map", vec);
-				/*
-				Callable::CallError ce;
-				Variant ret;
-				mapFunc.call(&v, 1, ret, ce);
-				float a = ret;
-				*/
-				//print_line(String("Box2DSDFShape::run map func: ") + rtos(a));
-
-				// convert back to b2d
-				return a / conversion;
-			};
-
 			finalDef.shape = &shp;
 			p_fixture_out = body_node->body->CreateFixture(&finalDef); // Write here because shp is in scope
-
-
 		} break;
 		default: {
 			ERR_FAIL();
@@ -189,6 +165,7 @@ void Box2DFixture::_notification(int p_what) {
 			if (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_collisions_hint()) {
 				set_process_internal(true);
 			}
+
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
@@ -342,6 +319,13 @@ void Box2DFixture::set_shape(const Ref<Box2DShape> &p_shape) {
 		shape->disconnect("changed", this, "_shape_changed");
 	}
 	shape = p_shape;
+
+	//THIS IS SUPER HACKY, wish godot 3.2 had callables
+	Box2DShape* p = (Box2DShape*)p_shape.ptr();
+	auto sdfShape = dynamic_cast<Box2DSDFShape*>(p);
+	if(sdfShape) {
+		sdfShape->mapFunc = this;
+	}
 
 	if (shape.is_valid()) {
 		shape->connect("changed", this, "_shape_changed");
