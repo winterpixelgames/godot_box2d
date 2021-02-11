@@ -130,8 +130,8 @@ void Box2DRectShape::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_height"), &Box2DRectShape::get_height);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size"), "set_size", "get_size");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "width", PROPERTY_HINT_EXP_RANGE, "0.5,16384,0.5"), "set_width", "get_width");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "height", PROPERTY_HINT_EXP_RANGE, "0.5,16384,0.5"), "set_height", "get_height");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "width", PROPERTY_HINT_EXP_RANGE, "0.5,163840,0.5"), "set_width", "get_width");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "height", PROPERTY_HINT_EXP_RANGE, "0.5,163840,0.5"), "set_height", "get_height");
 }
 
 void Box2DRectShape::set_size(const Vector2 &p_size) {
