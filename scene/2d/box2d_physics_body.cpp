@@ -424,25 +424,38 @@ String Box2DPhysicsBody::get_configuration_warning() const {
 
 Box2DWorld* Box2DPhysicsBody::find_world() const
 {
+	// Look for direct ancestors first (parents, grandparents, etc)
 	Node* _ancestor = get_parent();
 	Box2DWorld* world = nullptr;
 	while (_ancestor && !world)
 	{
 		world = Object::cast_to<Box2DWorld>(_ancestor);
-		if (!world)
+		_ancestor = _ancestor->get_parent();
+	}
+
+	// If world isnt direct ancestor,
+	// Look at uncles as well (siblings of parents, siblings of grandparents, etc)
+	if (!world)
+	{
+		_ancestor = get_parent();
+		while (_ancestor && !world)
 		{
-			// look at siblings of parents
-			for (int i = 0; i < _ancestor->get_child_count(); i++)
+			// You only have an uncle if you have a grandparent
+			Node* grandparent = _ancestor->get_parent();
+			if (grandparent)
 			{
-				Node* uncle = _ancestor->get_child(i);
-				world = Object::cast_to<Box2DWorld>(uncle);
-				if (world)
+				for (int i = 0; i < grandparent->get_child_count(); i++)
 				{
-					break;
+					Node* uncle = grandparent->get_child(i);
+					world = Object::cast_to<Box2DWorld>(uncle);
+					if (world)
+					{
+						break;
+					}
 				}
 			}
+			_ancestor = _ancestor->get_parent();
 		}
-		_ancestor = _ancestor->get_parent();
 	}
 
 	return world;
