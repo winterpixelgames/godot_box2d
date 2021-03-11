@@ -621,3 +621,43 @@ bool Box2DWorld::IntersectPointCallback::ReportFixture(b2Fixture *fixture) {
 		results.push_back(fixture);
 	return results.size() < max_results;
 }
+
+
+Box2DWorld* Box2DWorld::find_world(const Node* self)
+{
+	// Look for direct ancestors first (parents, grandparents, etc)
+	Node* _ancestor = self->get_parent();
+	Box2DWorld* world = nullptr;
+	while (_ancestor && !world)
+	{
+		world = Object::cast_to<Box2DWorld>(_ancestor);
+		_ancestor = _ancestor->get_parent();
+	}
+
+	// If world isnt direct ancestor,
+	// Look at uncles as well (siblings of parents, siblings of grandparents, etc)
+	if (!world)
+	{
+		_ancestor = self->get_parent();
+		while (_ancestor && !world)
+		{
+			// You only have an uncle if you have a grandparent
+			Node* grandparent = _ancestor->get_parent();
+			if (grandparent)
+			{
+				for (int i = 0; i < grandparent->get_child_count(); i++)
+				{
+					Node* uncle = grandparent->get_child(i);
+					world = Object::cast_to<Box2DWorld>(uncle);
+					if (world)
+					{
+						break;
+					}
+				}
+			}
+			_ancestor = _ancestor->get_parent();
+		}
+	}
+
+	return world;
+}

@@ -219,13 +219,7 @@ void Box2DJoint::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
-			// Find the Box2DWorld
-			Node *_ancestor = get_parent();
-			Box2DWorld *new_world = NULL;
-			while (_ancestor && !new_world) {
-				new_world = Object::cast_to<Box2DWorld>(_ancestor);
-				_ancestor = _ancestor->get_parent();
-			}
+			Box2DWorld *new_world = Box2DWorld::find_world(this);
 
 			// If new world, destroy joint.
 			// Will attempt to recreate in POST_ENTER_TREE.
@@ -386,11 +380,7 @@ String Box2DJoint::get_configuration_warning() const {
 	String warning = Node2D::get_configuration_warning();
 
 	Node *_ancestor = get_parent();
-	Box2DWorld *new_world = NULL;
-	while (_ancestor && !new_world) {
-		new_world = Object::cast_to<Box2DWorld>(_ancestor);
-		_ancestor = _ancestor->get_parent();
-	}
+	Box2DWorld *new_world = Box2DWorld::find_world(this);
 
 	if (!new_world) {
 		if (warning != String()) {

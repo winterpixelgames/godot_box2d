@@ -170,7 +170,7 @@ void Box2DPhysicsBody::_notification(int p_what) {
 			last_valid_xform = get_box2dworld_transform();
 
 			// Find the Box2DWorld
-			Box2DWorld *new_world = find_world();
+			Box2DWorld *new_world = Box2DWorld::find_world(this);
 
 			// If new parent, recreate body
 			if (new_world != world_node) {
@@ -396,7 +396,7 @@ void Box2DPhysicsBody::_bind_methods() {
 String Box2DPhysicsBody::get_configuration_warning() const {
 	String warning = Node2D::get_configuration_warning();
 
-	Box2DWorld *new_world = find_world();
+	Box2DWorld *new_world = Box2DWorld::find_world(this);
 
 	if (!new_world) {
 		if (warning != String()) {
@@ -420,45 +420,6 @@ String Box2DPhysicsBody::get_configuration_warning() const {
 	}
 
 	return warning;
-}
-
-Box2DWorld* Box2DPhysicsBody::find_world() const
-{
-	// Look for direct ancestors first (parents, grandparents, etc)
-	Node* _ancestor = get_parent();
-	Box2DWorld* world = nullptr;
-	while (_ancestor && !world)
-	{
-		world = Object::cast_to<Box2DWorld>(_ancestor);
-		_ancestor = _ancestor->get_parent();
-	}
-
-	// If world isnt direct ancestor,
-	// Look at uncles as well (siblings of parents, siblings of grandparents, etc)
-	if (!world)
-	{
-		_ancestor = get_parent();
-		while (_ancestor && !world)
-		{
-			// You only have an uncle if you have a grandparent
-			Node* grandparent = _ancestor->get_parent();
-			if (grandparent)
-			{
-				for (int i = 0; i < grandparent->get_child_count(); i++)
-				{
-					Node* uncle = grandparent->get_child(i);
-					world = Object::cast_to<Box2DWorld>(uncle);
-					if (world)
-					{
-						break;
-					}
-				}
-			}
-			_ancestor = _ancestor->get_parent();
-		}
-	}
-
-	return world;
 }
 
 void Box2DPhysicsBody::set_linear_velocity(const Vector2 &p_vel) {

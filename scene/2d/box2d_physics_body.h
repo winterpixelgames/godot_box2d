@@ -88,8 +88,6 @@ private:
 
 	void sync_state();
 
-	Box2DWorld* find_world() const;
-
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
