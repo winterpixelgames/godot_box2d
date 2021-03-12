@@ -526,8 +526,11 @@ void Box2DWorld::step(float p_step) {
 		collision_callback_queue.pop_front();
 	}
 
+
+	// Pump step callbacks
+	emit_signal("world_stepped");
 	// Notify our bodies in this world
-	propagate_notification(NOTIFICATION_WORLD_STEPPED);
+	// get_parent()->propagate_notification(NOTIFICATION_WORLD_STEPPED);
 }
 
 void Box2DWorld::set_gravity(const Vector2 &p_gravity) {
@@ -657,6 +660,11 @@ Box2DWorld* Box2DWorld::find_world(const Node* self)
 			}
 			_ancestor = _ancestor->get_parent();
 		}
+	}
+
+	if (!world)
+	{
+		print_line("[Box2DWorld] couldn't find world.");
 	}
 
 	return world;

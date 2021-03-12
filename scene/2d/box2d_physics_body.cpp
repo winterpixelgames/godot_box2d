@@ -171,7 +171,10 @@ void Box2DPhysicsBody::_notification(int p_what) {
 
 			// Find the Box2DWorld
 			Box2DWorld *new_world = Box2DWorld::find_world(this);
-
+			// TODO
+			// connect to world_stepped signal
+			// connect to if the world changed in the hierarchy
+			
 			// If new parent, recreate body
 			if (new_world != world_node) {
 				// Destroy b2Body
