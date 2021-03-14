@@ -133,6 +133,23 @@ void Box2DPhysicsBody::set_box2dworld_transform(const Transform2D &p_transform) 
 	set_transform(target_xform);
 }
 
+void Box2DPhysicsBody::step()
+{
+	if (body) {
+		const bool awake = body->IsAwake();
+		if (awake != prev_sleeping_state) {
+			emit_signal("sleeping_state_changed");
+			prev_sleeping_state = awake;
+		}
+		const bool enabled = body->IsEnabled();
+		if (enabled != prev_enabled_state) {
+			emit_signal("enabled_state_changed");
+		}
+
+		sync_state();
+	}
+}
+
 void Box2DPhysicsBody::sync_state() {
 	set_block_transform_notify(true);
 	set_box2dworld_transform(b2_to_gd(body->GetTransform()));
@@ -237,22 +254,6 @@ void Box2DPhysicsBody::_notification(int p_what) {
 					joint->get()->on_editor_transforms_changed();
 					joint = joint->next();
 				}
-			}
-		} break;
-
-		case Box2DWorld::NOTIFICATION_WORLD_STEPPED: {
-			if (body) {
-				const bool awake = body->IsAwake();
-				if (awake != prev_sleeping_state) {
-					emit_signal("sleeping_state_changed");
-					prev_sleeping_state = awake;
-				}
-				const bool enabled = body->IsEnabled();
-				if (enabled != prev_enabled_state) {
-					emit_signal("enabled_state_changed");
-				}
-
-				sync_state();
 			}
 		} break;
 

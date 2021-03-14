@@ -69,6 +69,8 @@ class Box2DJoint : public Node2D {
 	void _node_a_tree_entered();
 	void _node_b_tree_entered();
 
+	void step();
+	
 protected:
 	Box2DJointEditor::AnchorMode editor_anchor_mode = Box2DJointEditor::AnchorMode::MODE_ANCHORS_LOCAL;
 

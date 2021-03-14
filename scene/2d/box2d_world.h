@@ -235,11 +235,6 @@ protected:
 
 public:
 
-
-	enum {
-		NOTIFICATION_WORLD_STEPPED = 42300, // special int that shouldn't clobber other notifications.  See node.h
-	};
-
 	void step(float p_step);
 
 	void set_gravity(const Vector2 &gravity);

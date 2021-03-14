@@ -85,7 +85,8 @@ private:
 
 	void update_mass(bool p_calc_reset = true);
 	void update_filterdata();
-
+	
+	void step();
 	void sync_state();
 
 protected:

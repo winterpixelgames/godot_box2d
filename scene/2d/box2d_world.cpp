@@ -528,9 +528,17 @@ void Box2DWorld::step(float p_step) {
 
 
 	// Pump step callbacks
-	emit_signal("world_stepped");
-	// Notify our bodies in this world
-	// get_parent()->propagate_notification(NOTIFICATION_WORLD_STEPPED);
+	Set<Box2DPhysicsBody *>::Element *body = bodies.front();
+	while (body) {
+		body->get()->step();
+		body = body->next();
+	}
+	
+	Set<Box2DJoint *>::Element *joint = joints.front();
+	while (joint) {
+		joint->get()->step();
+		joint = joint->next();
+	}
 }
 
 void Box2DWorld::set_gravity(const Vector2 &p_gravity) {
