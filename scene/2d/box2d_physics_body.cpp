@@ -28,7 +28,7 @@ bool Box2DPhysicsBody::create_b2Body() {
 
 		body = world_node->world->CreateBody(&bodyDef);
 		body->GetUserData().owner = this;
-
+		world_node->bodies.insert(this);
 		//print_line("body created");
 
 		update_mass(false);
@@ -52,15 +52,16 @@ bool Box2DPhysicsBody::destroy_b2Body() {
 
 		// Destroy body
 		world_node->world->DestroyBody(body);
+		world_node->bodies.erase(this);
+		world_node = nullptr;
 		//print_line("body destroyed");
-		body = NULL;
+		body = nullptr;
 
 		// b2Fixture destruction is handled by Box2D
-
 		// b2Joint destruction is handled by Box2D
-
 		return true;
 	}
+	
 	return false;
 }
 
@@ -197,18 +198,11 @@ void Box2DPhysicsBody::_notification(int p_what) {
 				// Destroy b2Body
 				if (world_node) {
 					destroy_b2Body();
-					if (world_node) {
-						world_node->bodies.erase(this);
-					}
 				}
 				world_node = new_world;
 				// Create b2Body
 				if (world_node) {
-					world_node->bodies.insert(this);
-
-					if (world_node->world) {
-						create_b2Body();
-					}
+					create_b2Body();
 				}
 			}
 
@@ -226,6 +220,9 @@ void Box2DPhysicsBody::_notification(int p_what) {
 			//      This applies to Box2DFixture and Box2DJoint as well.
 
 			set_process_internal(false);
+			if (world_node) {
+				destroy_b2Body();
+			}
 		} break;
 
 		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED: {
