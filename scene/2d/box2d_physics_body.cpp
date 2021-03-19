@@ -88,6 +88,9 @@ void Box2DPhysicsBody::update_filterdata() {
 }
 
 Transform2D Box2DPhysicsBody::get_box2dworld_transform() {
+	//TODO make more efficient
+	return get_transform();
+	/*
 	std::vector<Transform2D> transforms{};
 	transforms.push_back(get_transform());
 	Node* parent = get_parent();
@@ -109,9 +112,13 @@ Transform2D Box2DPhysicsBody::get_box2dworld_transform() {
 	}
 
 	return returned;
+	*/
 }
 
 void Box2DPhysicsBody::set_box2dworld_transform(const Transform2D &p_transform) {
+	//TODO make more efficient
+	set_transform(p_transform);
+	/*
 	std::vector<Transform2D> transforms{};
 	transforms.push_back(p_transform);
 	Node* parent = get_parent();
@@ -132,6 +139,7 @@ void Box2DPhysicsBody::set_box2dworld_transform(const Transform2D &p_transform) 
 		transforms.pop_back();
 	}
 	set_transform(target_xform);
+	*/
 }
 
 void Box2DPhysicsBody::step()
