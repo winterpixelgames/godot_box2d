@@ -767,6 +767,7 @@ void Box2DSDFShape::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_debug_sdf_shader"), &Box2DSDFShape::get_debug_sdf_shader);
 	
 	ClassDB::bind_method(D_METHOD("gradient"), &Box2DSDFShape::gradient);
+	ClassDB::bind_method(D_METHOD("map"), &Box2DSDFShape::map);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "debug_sdf_shader", PROPERTY_HINT_RESOURCE_TYPE, "Shader"), "set_debug_sdf_shader", "get_debug_sdf_shader");
 }
@@ -829,6 +830,14 @@ void Box2DSDFShape::draw(const RID &p_to_rid, const Viewport* p_viewport, const 
 
 Box2DSDFShape::Box2DSDFShape() {
 	
+}
+
+float Box2DSDFShape::map(const Vector2 p) {
+	assert(mapFunc);
+	if(!mapFunc) {
+		print_error("set_map_func muset be set before calling Box2DSDFShape map." );
+	}
+	return mapFunc->sdf_map(p);
 }
 
 Vector2 Box2DSDFShape::gradient(const Vector2 p) {
