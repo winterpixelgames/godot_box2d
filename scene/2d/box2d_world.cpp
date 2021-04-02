@@ -488,13 +488,14 @@ void Box2DWorld::_bind_methods() {
 	//ClassDB::bind_method(D_METHOD("query_aabb", "bounds"), &Box2DWorld::query_aabb);
 	ClassDB::bind_method(D_METHOD("intersect_point", "point"), &Box2DWorld::intersect_point, DEFVAL(32));
 	//ClassDB::bind_method(D_METHOD("intersect_shape", "TODO"), &Box2DWorld::intersect_shape);
-	ClassDB::bind_method(D_METHOD("step", "delta"), &Box2DWorld::step);
+	ClassDB::bind_method(D_METHOD("step", "delta", "velocity_iterations", "position_iterations"), &Box2DWorld::step, DEFVAL(8), DEFVAL(8));
+	//ClassDB::bind_method(D_METHOD("disconnect_peer", "id", "now"), &NetworkedMultiplayerENet::disconnect_peer, DEFVAL(false));
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "gravity"), "set_gravity", "get_gravity");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_step"), "set_auto_step", "get_auto_step");
 }
 
-void Box2DWorld::step(float p_step) {
+void Box2DWorld::step(float p_step, int32 velocity_iterations, int32 position_iterations) {
 	//print_line(("step: " + std::to_string(p_step)
 	//		+ ", gravity: ("
 	//		+ std::to_string(world->GetGravity().x) + ", "
@@ -511,7 +512,7 @@ void Box2DWorld::step(float p_step) {
 	}
 
 	assert(collision_callback_queue.empty());
-	world->Step(p_step, 8, 8);
+	world->Step(p_step, velocity_iterations, position_iterations);
 	flag_rescan_contacts_monitored = false;
 
 	// Pump callbacks
