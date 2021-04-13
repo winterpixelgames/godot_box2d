@@ -137,7 +137,9 @@ void Box2DFixture::_notification(int p_what) {
 			for (int i = 0; i < filtering_me.size(); i++) {
 				filtering_me[i]->filtered.erase(this);
 			}
-
+			for (int i = 0; i < filtered.size(); i++) {
+				filtered[i]->filtering_me.erase(this);
+			}
 			destroy_b2();
 		} break;
 

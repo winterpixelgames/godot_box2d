@@ -184,10 +184,13 @@ void Box2DPhysicsBody::_notification(int p_what) {
 			}
 
 			// Inform filterers that this node has gone to a farm far away where it can run around in fields much bigger than we have at home
+			for (int i = 0; i < filtered.size(); i++) {
+				filtered[i]->filtering_me.erase(this);
+			}
 			for (int i = 0; i < filtering_me.size(); i++) {
 				filtering_me[i]->filtered.erase(this);
 			}
-
+			
 			destroy_b2Body();
 		} break;
 
