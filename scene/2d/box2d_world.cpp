@@ -490,7 +490,9 @@ void Box2DWorld::_bind_methods() {
 	//ClassDB::bind_method(D_METHOD("intersect_shape", "TODO"), &Box2DWorld::intersect_shape);
 	ClassDB::bind_method(D_METHOD("step", "delta", "velocity_iterations", "position_iterations"), &Box2DWorld::step, DEFVAL(8), DEFVAL(8));
 	//ClassDB::bind_method(D_METHOD("disconnect_peer", "id", "now"), &NetworkedMultiplayerENet::disconnect_peer, DEFVAL(false));
-
+	ClassDB::bind_method(D_METHOD("find_new_contacts"), &Box2DWorld::FindNewContacts);
+	
+	
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "gravity"), "set_gravity", "get_gravity");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_step"), "set_auto_step", "get_auto_step");
 }
@@ -677,4 +679,9 @@ Box2DWorld* Box2DWorld::find_world(const Node* self)
 	}
 
 	return world;
+}
+
+void Box2DWorld::FindNewContacts()
+{
+	world->m_contactManager.FindNewContacts();
 }
