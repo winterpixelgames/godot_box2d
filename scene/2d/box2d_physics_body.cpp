@@ -734,6 +734,7 @@ int Box2DPhysicsBody::get_max_contacts_reported() const {
 	return max_contacts_reported;
 }
 
+/*
 Array Box2DPhysicsBody::get_colliding_bodies() const {
 	ERR_FAIL_COND_V(!contact_monitor, Array());
 	Array ret;
@@ -747,6 +748,22 @@ Array Box2DPhysicsBody::get_colliding_bodies() const {
 		}
 	}
 
+	return ret;
+}
+*/
+
+Array Box2DPhysicsBody::get_colliding_bodies() const {
+	Array ret;
+	const b2ContactEdge* contact_iterator = body->GetContactList();
+	while (contact_iterator)
+	{	
+		if (contact_iterator->contact->IsTouching())
+		{
+			Box2DPhysicsBody* godot_node = contact_iterator->other->GetUserData().owner;
+			ret.append(godot_node);
+		}
+		contact_iterator = contact_iterator->next;
+	}
 	return ret;
 }
 
