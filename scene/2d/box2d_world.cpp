@@ -60,6 +60,7 @@ bool Box2DWorld::ShouldCollide(b2Fixture *fixtureA, b2Fixture *fixtureB) {
 }
 
 inline void Box2DWorld::try_buffer_contact(b2Contact *contact, int i) {
+	return;
 	if (contact->GetFixtureA()->IsSensor() || contact->GetFixtureB()->IsSensor()) {
 		return;
 	}
@@ -113,7 +114,13 @@ void Box2DWorld::BeginContact(b2Contact *contact) {
 	Box2DFixture *fnode_b = contact->GetFixtureB()->GetUserData().owner;
 	Box2DPhysicsBody *body_a = fnode_a->body_node;
 	Box2DPhysicsBody *body_b = fnode_b->body_node;
-
+	if (contact->IsTouching())
+	{
+		collision_callback_queue.push_back(GodotSignalCaller("body_entered", body_a, body_b, nullptr));
+		collision_callback_queue.push_back(GodotSignalCaller("body_entered", body_b, body_a, nullptr));
+	}
+	return;
+	
 	const bool monitoringA = fnode_a->body_node->is_contact_monitor_enabled();
 	const bool monitoringB = fnode_b->body_node->is_contact_monitor_enabled();
 
@@ -169,6 +176,12 @@ void Box2DWorld::EndContact(b2Contact *contact) {
 	Box2DFixture *fnode_b = contact->GetFixtureB()->GetUserData().owner;
 	Box2DPhysicsBody *body_a = fnode_a->body_node;
 	Box2DPhysicsBody *body_b = fnode_b->body_node;
+	if (contact->IsTouching())
+	{
+		collision_callback_queue.push_back(GodotSignalCaller("body_exited", body_a, body_b, nullptr));
+		collision_callback_queue.push_back(GodotSignalCaller("body_exited", body_b, body_a, nullptr));
+	}
+	return;
 
 	const bool monitoringA = fnode_a->body_node->is_contact_monitor_enabled();
 	const bool monitoringB = fnode_b->body_node->is_contact_monitor_enabled();
@@ -231,6 +244,7 @@ void Box2DWorld::EndContact(b2Contact *contact) {
 }
 
 void Box2DWorld::PreSolve(b2Contact *contact, const b2Manifold *oldManifold) {
+	return;
 	b2PointState state1[2], state2[2];
 	b2GetPointStates(state1, state2, oldManifold, contact->GetManifold());
 
@@ -349,6 +363,7 @@ void Box2DWorld::PreSolve(b2Contact *contact, const b2Manifold *oldManifold) {
 }
 
 void Box2DWorld::PostSolve(b2Contact *contact, const b2ContactImpulse *impulse) {
+	return;
 	const Box2DFixture *fnode_a = contact->GetFixtureA()->GetUserData().owner;
 	const Box2DFixture *fnode_b = contact->GetFixtureB()->GetUserData().owner;
 
@@ -505,13 +520,13 @@ void Box2DWorld::step(float p_step, int32 velocity_iterations, int32 position_it
 	//	.c_str());
 
 	// Reset contact "solves" counter to 0
-	const uint64_t *k = NULL;
-	while ((k = contact_buffer.next(k))) {
-		ContactBufferManifold *buffer_manifold = contact_buffer.getptr(*k);
-		for (int i = 0; i < buffer_manifold->count; ++i) {
-			buffer_manifold->points[i].reset_accum();
-		}
-	}
+	// const uint64_t *k = NULL;
+	// while ((k = contact_buffer.next(k))) {
+	// 	ContactBufferManifold *buffer_manifold = contact_buffer.getptr(*k);
+	// 	for (int i = 0; i < buffer_manifold->count; ++i) {
+	// 		buffer_manifold->points[i].reset_accum();
+	// 	}
+	// }
 
 	assert(collision_callback_queue.empty());
 	world->Step(p_step, velocity_iterations, position_iterations);
@@ -685,8 +700,36 @@ Box2DWorld* Box2DWorld::find_world(const Node* self)
 
 void Box2DWorld::FindNewContacts()
 {
+	/*
 	world->SetContactListener(nullptr);
 	world->m_contactManager.FindNewContacts();
 	world->m_contactManager.Collide();
+	world->SetContactListener(this);
+	*/
+
+	/*
+	// Delete the attached contacts.
+	b2ContactEdge* ce = b->m_contactList;
+	while (ce)
+	{
+		b2ContactEdge* ce0 = ce;
+		ce = ce->next;
+		m_contactManager.Destroy(ce0->contact);
+	}
+	b->m_contactList = nullptr;
+	*/
+	world->SetContactListener(nullptr);
+	for (b2Body* b = world->GetBodyList(); b; b = b->GetNext())
+	{
+		b2ContactEdge* ce = b->GetContactList();
+		while (ce)
+		{
+			b2ContactEdge* ce0 = ce;
+			ce = ce->next;
+			world->m_contactManager.Destroy(ce0->contact);
+		}
+		b->m_contactList = nullptr;
+	}
+	world->m_contactManager.FindNewContacts();
 	world->SetContactListener(this);
 }
