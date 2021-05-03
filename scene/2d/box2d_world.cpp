@@ -397,7 +397,7 @@ void Box2DWorld::PostSolve(b2Contact *contact, const b2ContactImpulse *impulse) 
 void Box2DWorld::create_b2World() {
 	if (!world) {
 		world = memnew(b2World(gd_to_b2(gravity)));
-		collision_callback_queue.set_world(world);
+		collision_callback_queue.set_world(this);
 
 		world->SetDestructionListener(this);
 		world->SetContactFilter(this);
@@ -518,6 +518,7 @@ void Box2DWorld::step(float p_step, int32 velocity_iterations, int32 position_it
 	flag_rescan_contacts_monitored = false;
 
 	// Pump callbacks
+	is_pumping_callbacks = true;
 	while(!collision_callback_queue.empty()) {
 		GodotSignalCaller& sig = collision_callback_queue.front();
 		if(sig.obj_b) {
@@ -528,6 +529,7 @@ void Box2DWorld::step(float p_step, int32 velocity_iterations, int32 position_it
 		}
 		collision_callback_queue.pop_front();
 	}
+	is_pumping_callbacks = false;
 
 
 	// Pump step callbacks
