@@ -193,6 +193,7 @@ private:
 private:
 	Vector2 gravity;
 	bool auto_step{true};
+	bool warm_starting{true};
 	b2World *world;
 
 	Box2dCollisionCallbackQueue collision_callback_queue{};
@@ -244,6 +245,9 @@ public:
 
 	void set_auto_step(bool p_auto_step);
 	bool get_auto_step() const;
+
+	void set_warm_starting(bool p_warm_starting);
+	bool get_warm_starting() const;
 
 	//bool isLocked() const;
 

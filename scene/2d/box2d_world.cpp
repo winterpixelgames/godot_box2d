@@ -399,6 +399,7 @@ void Box2DWorld::create_b2World() {
 		world = memnew(b2World(gd_to_b2(gravity)));
 		collision_callback_queue.set_world(world);
 
+		world->SetWarmStarting(warm_starting);
 		world->SetDestructionListener(this);
 		world->SetContactFilter(this);
 		world->SetContactListener(this);
@@ -484,6 +485,9 @@ void Box2DWorld::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_gravity"), &Box2DWorld::get_gravity);
 	ClassDB::bind_method(D_METHOD("set_auto_step", "auto_setp"), &Box2DWorld::set_auto_step);
 	ClassDB::bind_method(D_METHOD("get_auto_step"), &Box2DWorld::get_auto_step);
+	ClassDB::bind_method(D_METHOD("set_warm_starting", "warm_starting"), &Box2DWorld::set_warm_starting);
+	ClassDB::bind_method(D_METHOD("get_warm_starting"), &Box2DWorld::get_warm_starting);
+
 
 	//ClassDB::bind_method(D_METHOD("query_aabb", "bounds"), &Box2DWorld::query_aabb);
 	ClassDB::bind_method(D_METHOD("intersect_point", "point"), &Box2DWorld::intersect_point, DEFVAL(32));
@@ -495,6 +499,7 @@ void Box2DWorld::_bind_methods() {
 	
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "gravity"), "set_gravity", "get_gravity");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_step"), "set_auto_step", "get_auto_step");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "warm_starting"), "set_warm_starting", "get_warm_starting");
 }
 
 void Box2DWorld::step(float p_step, int32 velocity_iterations, int32 position_iterations) {
@@ -560,6 +565,16 @@ void Box2DWorld::set_auto_step(bool p_auto_step) {
 
 bool Box2DWorld::get_auto_step() const {
 	return auto_step;
+}
+
+void Box2DWorld::set_warm_starting(bool p_warm_starting) {
+	warm_starting = p_warm_starting;
+	if (world)
+		world->SetWarmStarting(warm_starting);
+}
+
+bool Box2DWorld::get_warm_starting() const {
+	return warm_starting;
 }
 
 Array Box2DWorld::intersect_point(const Vector2 &p_point, int p_max_results) { //, const Vector<Ref<Box2DPhysicsBody> > &p_exclude/*, uint32_t p_layers*/) {
