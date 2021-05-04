@@ -698,8 +698,6 @@ Box2DWorld* Box2DWorld::find_world(const Node* self)
 
 void Box2DWorld::FindNewContacts()
 {
-	world->SetContactListener(nullptr);
 	world->m_contactManager.FindNewContacts();
 	world->m_contactManager.Collide();
-	world->SetContactListener(this);
 }
