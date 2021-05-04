@@ -482,6 +482,30 @@ real_t Box2DFixture::get_restitution() const {
 	return fixtureDef.restitution;
 }
 
+void Box2DFixture::reset_fixture() {
+	fixtures.clear();
+	if (shape->is_composite_shape()) {
+		Vector<const b2Shape *> shape_vector = shape.ptr()->get_shapes();
+		for (int i = 0; i < shape_vector.size(); i++) {
+			fixtureDef.shape = shape_vector[i];
+			b2Fixture *fixture = NULL;
+			create_b2Fixture(fixture, fixtureDef, get_transform());
+			if (fixture) {
+					fixtures.push_back(fixture);
+			}
+		}
+	} else {
+		ERR_FAIL_COND_MSG(!shape->get_shape(), "fixtures need a shape");
+
+		fixtureDef.shape = shape->get_shape();
+		b2Fixture *fixture = NULL;
+		create_b2Fixture(fixture, fixtureDef, get_transform());
+		if (fixture) {
+				fixtures.push_back(fixture);
+		}
+	}
+}
+
 Box2DFixture::Box2DFixture() {
 	const float factor = GD_TO_B2;
 	fixtureDef.density = 0.4f * (1.0e-3f / (factor * factor)); // 0.4 g/px^2 default

@@ -109,6 +109,8 @@ public:
 	void set_restitution(real_t p_restitution);
 	real_t get_restitution() const;
 
+	void reset_fixture();
+
 	// restitution threshold?
 
 	Box2DFixture();

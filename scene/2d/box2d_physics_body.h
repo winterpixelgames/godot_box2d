@@ -187,6 +187,8 @@ public:
 	void apply_central_linear_impulse(const Vector2 &p_impulse, bool p_wake = true);
 	void apply_torque_impulse(real_t p_impulse, bool p_wake = true);
 
+	void destroy_and_recreate();
+
 	Box2DPhysicsBody();
 	~Box2DPhysicsBody();
 };
