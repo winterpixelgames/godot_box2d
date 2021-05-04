@@ -244,6 +244,27 @@ void Box2DWorld::EndContact(b2Contact *contact) {
 }
 
 void Box2DWorld::PreSolve(b2Contact *contact, const b2Manifold *oldManifold) {
+	Dictionary contact_signal_dictionary;
+	contact_signal_dictionary["is_touching"] = contact->IsTouching();
+	contact_signal_dictionary["friction"] = contact->GetFriction();
+	contact_signal_dictionary["restitution"] = contact->GetRestitution();
+	contact_signal_dictionary["tangent_speed"] = contact->GetTangentSpeed();
+	contact_signal_dictionary["is_touching"] = contact->IsTouching();
+	contact_signal_dictionary["manifold_type"] = oldManifold->type;
+	contact_signal_dictionary["local_normal"] = b2_to_gd(oldManifold->localNormal);
+	contact_signal_dictionary["local_point"] = b2_to_gd(oldManifold->localPoint);
+	contact_signal_dictionary["sdf_radius"] = oldManifold->sdfRadius;
+	contact_signal_dictionary["point_count"] = oldManifold->pointCount;
+	contact_signal_dictionary["point_1_local_point"] = b2_to_gd(oldManifold->points[0].localPoint);
+	contact_signal_dictionary["point_1_normal_impulse"] = oldManifold->points[0].normalImpulse;
+	contact_signal_dictionary["point_1_tangent_impulse"] = oldManifold->points[0].tangentImpulse;
+	if (oldManifold->pointCount > 1)
+	{
+		contact_signal_dictionary["point_2_local_point"] = b2_to_gd(oldManifold->points[1].localPoint);
+		contact_signal_dictionary["point_2_normal_impulse"] = oldManifold->points[1].normalImpulse;
+		contact_signal_dictionary["point_2_tangent_impulse"] = oldManifold->points[1].tangentImpulse;
+	}
+	emit_signal("presolve_contact", contact_signal_dictionary);
 	return;
 	b2PointState state1[2], state2[2];
 	b2GetPointStates(state1, state2, oldManifold, contact->GetManifold());
@@ -363,7 +384,23 @@ void Box2DWorld::PreSolve(b2Contact *contact, const b2Manifold *oldManifold) {
 }
 
 void Box2DWorld::PostSolve(b2Contact *contact, const b2ContactImpulse *impulse) {
+	Dictionary contact_signal_dictionary;
+	contact_signal_dictionary["is_touching"] = contact->IsTouching();
+	contact_signal_dictionary["friction"] = contact->GetFriction();
+	contact_signal_dictionary["restitution"] = contact->GetRestitution();
+	contact_signal_dictionary["tangent_speed"] = contact->GetTangentSpeed();
+	contact_signal_dictionary["is_touching"] = contact->IsTouching();
+	contact_signal_dictionary["impulse_count"] = impulse->count;
+	contact_signal_dictionary["normal_impulse_1"] = impulse->normalImpulses[0];
+	contact_signal_dictionary["tangent_impulse_1"] = impulse->tangentImpulses[0];
+	if (impulse->count > 1)
+	{
+		contact_signal_dictionary["normal_impulse_2"] = impulse->normalImpulses[1];
+		contact_signal_dictionary["normal_impulse_2"] = impulse->tangentImpulses[1];
+	}
+	emit_signal("postsolve_contact", contact_signal_dictionary);
 	return;
+
 	const Box2DFixture *fnode_a = contact->GetFixtureA()->GetUserData().owner;
 	const Box2DFixture *fnode_b = contact->GetFixtureB()->GetUserData().owner;
 
@@ -510,6 +547,9 @@ void Box2DWorld::_bind_methods() {
 	
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "gravity"), "set_gravity", "get_gravity");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_step"), "set_auto_step", "get_auto_step");
+
+	ADD_SIGNAL(MethodInfo("presolve_contact", PropertyInfo(Variant::DICTIONARY, "contact_info")));
+	ADD_SIGNAL(MethodInfo("postsolve_contact", PropertyInfo(Variant::DICTIONARY, "contact_info")));
 }
 
 void Box2DWorld::step(float p_step, int32 velocity_iterations, int32 position_iterations) {
