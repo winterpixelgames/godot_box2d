@@ -154,10 +154,10 @@ private:
 
 	class Box2dCollisionCallbackQueue  {
 	private:
-		b2World *world{nullptr};
+		Box2DWorld *world{nullptr};
 		std::list<GodotSignalCaller> collision_callback_queue{};
 	public:
-		inline void set_world(b2World *p) {
+		inline void set_world(Box2DWorld *p) {
 			world = p;
 		}
 
@@ -175,7 +175,10 @@ private:
 
 		inline void push_back(GodotSignalCaller&& sig) {
 			assert(world);
-			if(world->IsLocked()) {
+			assert(world->world);
+			//collision_callback_queue.push_back(sig);
+			
+			if(world->world->IsLocked() || world->is_pumping_callbacks) {
 				collision_callback_queue.push_back(sig);
 			}
 			else {
@@ -194,6 +197,7 @@ private:
 	Vector2 gravity;
 	bool auto_step{true};
 	bool warm_starting{true};
+	bool is_pumping_callbacks{false};
 	b2World *world;
 
 	Box2dCollisionCallbackQueue collision_callback_queue{};
