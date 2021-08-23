@@ -164,7 +164,7 @@ public:
 	void set_max_contacts_reported(int p_amount);
 	int get_max_contacts_reported() const;
 
-	Array get_colliding_bodies() const; // Function exists for Godot feature congruency
+	int get_colliding_bodies(Array p_array) const; // Function exists for Godot feature congruency
 
 	// TODO for documentation: all contact info is in world space
 	int get_contact_count() const;

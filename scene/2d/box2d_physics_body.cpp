@@ -382,7 +382,7 @@ void Box2DPhysicsBody::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_max_contacts_reported", "amount"), &Box2DPhysicsBody::set_max_contacts_reported);
 	ClassDB::bind_method(D_METHOD("get_max_contacts_reported"), &Box2DPhysicsBody::get_max_contacts_reported);
 
-	ClassDB::bind_method(D_METHOD("get_colliding_bodies"), &Box2DPhysicsBody::get_colliding_bodies);
+	ClassDB::bind_method(D_METHOD("get_colliding_bodies", "array"), &Box2DPhysicsBody::get_colliding_bodies);
 
 	ClassDB::bind_method(D_METHOD("get_contact_count"), &Box2DPhysicsBody::get_contact_count);
 	ClassDB::bind_method(D_METHOD("get_contact_fixture_a", "idx"), &Box2DPhysicsBody::get_contact_fixture_a);
@@ -785,19 +785,27 @@ Array Box2DPhysicsBody::get_colliding_bodies() const {
 }
 */
 
-Array Box2DPhysicsBody::get_colliding_bodies() const {
-	Array ret;
+int Box2DPhysicsBody::get_colliding_bodies(Array p_array) const {
 	const b2ContactEdge* contact_iterator = body->GetContactList();
+	int i = 0;
+	int size = p_array.size();
 	while (contact_iterator)
 	{	
 		if (contact_iterator->contact->IsTouching())
 		{
 			Box2DPhysicsBody* godot_node = contact_iterator->other->GetUserData().owner;
-			ret.append(godot_node);
+			if(i < size) {
+				p_array[i] = godot_node;
+				i++;
+			}
+			else {
+				print_error("get_colliding_bodies overload");
+				assert(false);
+			}
 		}
 		contact_iterator = contact_iterator->next;
 	}
-	return ret;
+	return i;
 }
 
 int Box2DPhysicsBody::get_contact_count() const {
