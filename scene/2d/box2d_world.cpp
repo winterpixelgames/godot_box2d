@@ -834,6 +834,10 @@ IntersectionManifoldResult _evaluate_intersection_manifold(const b2Shape *p_shap
 					b2CollidePolygonAndCircle(&manifold, static_cast<const b2PolygonShape *>(p_shapeB), p_xfB, static_cast<const b2CircleShape *>(p_shapeA), p_xfA);
 					flipped = true;
 				} break;
+				case b2Shape::Type::e_sdf: {
+					b2CollideSDFAndCircle(&manifold, static_cast<const b2SDFShape *>(p_shapeB), p_xfB, static_cast<const b2CircleShape *>(p_shapeA), p_xfA);
+					flipped = true;
+				} break;
 			}
 		} break;
 		case b2Shape::Type::e_edge: {
@@ -846,6 +850,9 @@ IntersectionManifoldResult _evaluate_intersection_manifold(const b2Shape *p_shap
 				} break;
 				case b2Shape::Type::e_polygon: {
 					b2CollideEdgeAndPolygon(&manifold, static_cast<const b2EdgeShape *>(p_shapeA), p_xfA, static_cast<const b2PolygonShape *>(p_shapeB), p_xfB);
+				} break;
+				case b2Shape::Type::e_sdf: {
+					ERR_FAIL_V_MSG((IntersectionManifoldResult{ manifold, flipped }), "Edge/SDF shape collision not implemented.");
 				} break;
 			}
 		} break;
@@ -860,6 +867,25 @@ IntersectionManifoldResult _evaluate_intersection_manifold(const b2Shape *p_shap
 				} break;
 				case b2Shape::Type::e_polygon: {
 					b2CollidePolygons(&manifold, static_cast<const b2PolygonShape *>(p_shapeA), p_xfA, static_cast<const b2PolygonShape *>(p_shapeB), p_xfB);
+				} break;
+				case b2Shape::Type::e_sdf: {
+					ERR_FAIL_V_MSG((IntersectionManifoldResult{ manifold, flipped }), "Polygon/SDF shape collision not implemented.");
+				} break;
+			}
+		} break;
+		case b2Shape::Type::e_sdf: {
+			switch (p_shapeB->GetType()) {
+				case b2Shape::Type::e_circle: {
+					b2CollideSDFAndCircle(&manifold, static_cast<const b2SDFShape *>(p_shapeA), p_xfA, static_cast<const b2CircleShape *>(p_shapeB), p_xfB);
+				} break;
+				case b2Shape::Type::e_edge: {
+					ERR_FAIL_V_MSG((IntersectionManifoldResult{ manifold, flipped }), "Edge/SDF shape collision not implemented.");
+				} break;
+				case b2Shape::Type::e_polygon: {
+					ERR_FAIL_V_MSG((IntersectionManifoldResult{ manifold, flipped }), "Polygon/SDF shape collision not implemented.");
+				} break;
+				case b2Shape::Type::e_sdf: {
+					ERR_FAIL_V_MSG((IntersectionManifoldResult{ manifold, flipped }), "SDF/SDF shape collision not implemented.");
 				} break;
 			}
 		} break;
