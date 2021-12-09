@@ -328,22 +328,25 @@ private:
 			Box2DCollisionObject *transient;
 		};
 		std::deque<CollisionUpdatePair> queue{};
+		bool pumping{false};
 
 	public:
-		inline void enqueue(Box2DCollisionObject *p_caller, Box2DCollisionObject *p_transient) {
-			queue.push_back({ p_caller, p_transient });
-		}
-
-		inline void call_immediate(Box2DCollisionObject *p_caller, Box2DCollisionObject *p_transient) {
-			(p_caller->*on_object_inout)(p_transient);
+		inline void push_back(Box2DCollisionObject *p_caller, Box2DCollisionObject *p_transient, const bool p_queued = true) {
+			if (p_queued || pumping) {
+				queue.push_back({ p_caller, p_transient });
+			} else {
+				(p_caller->*on_object_inout)(p_transient);
+			}
 		}
 
 		inline void call_and_clear() {
+			pumping = true;
 			while (!queue.empty()) {
 				CollisionUpdatePair *pair = &queue.front();
 				(pair->function_owner->*on_object_inout)(pair->transient);
 				queue.pop_front();
 			}
+			pumping = false;
 		}
 	};
 
@@ -356,22 +359,25 @@ private:
 			Box2DFixture *self;
 		};
 		std::deque<CollisionUpdatePair> queue{};
+		bool pumping{false};
 
 	public:
-		inline void enqueue(Box2DCollisionObject *p_caller, Box2DFixture *p_transient, Box2DFixture *p_self) {
-			queue.push_back({ p_caller, p_transient, p_self });
-		}
-
-		inline void call_immediate(Box2DCollisionObject *p_caller, Box2DFixture *p_transient, Box2DFixture *p_self) {
-			(p_caller->*on_fixture_inout)(p_transient, p_self);
+		inline void push_back(Box2DCollisionObject *p_caller, Box2DFixture *p_transient, Box2DFixture *p_self, const bool p_queued = true) {
+			if (p_queued || pumping) {
+				queue.push_back({ p_caller, p_transient, p_self });
+			} else {
+				(p_caller->*on_fixture_inout)(p_transient, p_self);
+			}
 		}
 
 		inline void call_and_clear() {
+			pumping = true;
 			while (!queue.empty()) {
 				CollisionUpdatePair *pair = &queue.front();
 				(pair->function_owner->*on_fixture_inout)(pair->transient, pair->self);
 				queue.pop_front();
 			}
+			pumping = false;
 		}
 	};
 

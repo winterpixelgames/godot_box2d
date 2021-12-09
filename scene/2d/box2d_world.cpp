@@ -327,7 +327,7 @@ void Box2DWorld::BeginContact(b2Contact *contact) {
 
 		if (*body_count_ptr == 1) {
 			collision_callback_queue.push_back(GodotSignalCaller("body_entered", body_a, body_b, nullptr));
-			object_entered_queue.enqueue(body_a, body_b);
+			object_entered_queue.push_back(body_a, body_b);
 		}
 
 		int *fix_count_ptr = body_a->contact_monitor->entered_objects.getptr(fnode_b->get_instance_id());
@@ -338,7 +338,7 @@ void Box2DWorld::BeginContact(b2Contact *contact) {
 
 		if (*fix_count_ptr == 1) {
 			collision_callback_queue.push_back(GodotSignalCaller("body_fixture_entered", body_a, fnode_b, fnode_a));
-			fixture_entered_queue.enqueue(body_a, fnode_b, fnode_a);
+			fixture_entered_queue.push_back(body_a, fnode_b, fnode_a);
 		}
 	}
 	if (monitoringB) {
@@ -350,7 +350,7 @@ void Box2DWorld::BeginContact(b2Contact *contact) {
 
 		if (*body_count_ptr == 1) {
 			collision_callback_queue.push_back(GodotSignalCaller("body_entered", body_b, body_a, nullptr));
-			object_entered_queue.enqueue(body_b, body_a);
+			object_entered_queue.push_back(body_b, body_a);
 		}
 
 		int *fix_count_ptr = body_b->contact_monitor->entered_objects.getptr(fnode_a->get_instance_id());
@@ -361,7 +361,7 @@ void Box2DWorld::BeginContact(b2Contact *contact) {
 
 		if (*fix_count_ptr == 1) {
 			collision_callback_queue.push_back(GodotSignalCaller("body_fixture_entered", body_b, fnode_a, fnode_b));
-			fixture_entered_queue.enqueue(body_b, fnode_a, fnode_b);
+			fixture_entered_queue.push_back(body_b, fnode_a, fnode_b);
 		}
 	}
 }
@@ -393,10 +393,7 @@ void Box2DWorld::EndContact(b2Contact *contact) {
 		if ((*body_count_ptr) == 0) {
 			body_a->contact_monitor->entered_objects.erase(body_b->get_instance_id());
 			collision_callback_queue.push_back(GodotSignalCaller("body_exited", body_a, body_b, nullptr));
-			if (queue_inout)
-				object_exited_queue.enqueue(body_a, body_b);
-			else
-				object_exited_queue.call_immediate(body_a, body_b);
+			object_exited_queue.push_back(body_a, body_b, queue_inout);
 		}
 
 		int *fix_count_ptr = body_a->contact_monitor->entered_objects.getptr(fnode_b->get_instance_id());
@@ -405,10 +402,7 @@ void Box2DWorld::EndContact(b2Contact *contact) {
 		if ((*fix_count_ptr) == 0) {
 			body_a->contact_monitor->entered_objects.erase(fnode_b->get_instance_id());
 			collision_callback_queue.push_back(GodotSignalCaller("body_fixture_exited", body_a, fnode_b, fnode_a));
-			if (queue_inout)
-				fixture_exited_queue.enqueue(body_a, fnode_b, fnode_a);
-			else
-				fixture_exited_queue.call_immediate(body_a, fnode_b, fnode_a);
+			fixture_exited_queue.push_back(body_a, fnode_b, fnode_a, queue_inout);
 		}
 	}
 	if (monitoringB) {
@@ -418,10 +412,7 @@ void Box2DWorld::EndContact(b2Contact *contact) {
 		if ((*body_count_ptr) == 0) {
 			body_b->contact_monitor->entered_objects.erase(body_a->get_instance_id());
 			collision_callback_queue.push_back(GodotSignalCaller("body_exited", body_b, body_a, nullptr));
-			if (queue_inout)
-				object_exited_queue.enqueue(body_b, body_a);
-			else
-				object_exited_queue.call_immediate(body_b, body_a);
+			object_exited_queue.push_back(body_b, body_a, queue_inout);
 		}
 
 		int *fix_count_ptr = body_b->contact_monitor->entered_objects.getptr(fnode_a->get_instance_id());
@@ -430,10 +421,7 @@ void Box2DWorld::EndContact(b2Contact *contact) {
 		if ((*fix_count_ptr) == 0) {
 			body_b->contact_monitor->entered_objects.erase(fnode_a->get_instance_id());
 			collision_callback_queue.push_back(GodotSignalCaller("body_fixture_exited", body_b, fnode_a, fnode_b));
-			if (queue_inout)
-				fixture_exited_queue.enqueue(body_b, fnode_a, fnode_b);
-			else
-				fixture_exited_queue.call_immediate(body_b, fnode_a, fnode_b);
+			fixture_exited_queue.push_back(body_b, fnode_a, fnode_b, queue_inout);
 		}
 	}
 
