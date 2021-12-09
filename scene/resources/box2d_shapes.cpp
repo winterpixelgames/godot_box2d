@@ -1,6 +1,8 @@
 #include "box2d_shapes.h"
 
 #include <core/project_settings.h>
+#include <core/math/geometry.h>
+//#include <servers/rendering_server.h>
 #include <servers/visual_server.h>
 #include <core/math/geometry.h>
 #include <core/io/resource_loader.h>
@@ -74,7 +76,14 @@ bool Box2DShape::is_composite_shape() const {
 }
 
 const Vector<const b2Shape *> Box2DShape::get_shapes() const {
-	ERR_FAIL_V(Vector<const b2Shape *>());
+	if (is_composite_shape()) {
+		CRASH_NOW_MSG("Box2DShape::get_shapes must be overridden by all composite shapes.");
+		ERR_FAIL_V(Vector<const b2Shape *>());
+	} else {
+		Vector<const b2Shape *> vec;
+		vec.push_back(get_shape());
+		return vec;
+	}
 }
 
 bool Box2DShape::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
@@ -99,7 +108,7 @@ void Box2DCircleShape::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &Box2DCircleShape::set_radius);
 	ClassDB::bind_method(D_METHOD("get_radius"), &Box2DCircleShape::get_radius);
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "radius", PROPERTY_HINT_EXP_RANGE, "0.5,16384,0.5"), "set_radius", "get_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "radius", PROPERTY_HINT_EXP_RANGE, "0.5,16384,0.5,or_greater"), "set_radius", "get_radius");
 }
 
 void Box2DCircleShape::set_radius(real_t p_radius) {
@@ -130,8 +139,8 @@ void Box2DRectShape::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_height"), &Box2DRectShape::get_height);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size"), "set_size", "get_size");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "width", PROPERTY_HINT_EXP_RANGE, "0.5,163840,0.5"), "set_width", "get_width");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "height", PROPERTY_HINT_EXP_RANGE, "0.5,163840,0.5"), "set_height", "get_height");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "width", PROPERTY_HINT_EXP_RANGE, "0.5,16384,0.5,or_greater"), "set_width", "get_width");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "height", PROPERTY_HINT_EXP_RANGE, "0.5,16384,0.5,or_greater"), "set_height", "get_height");
 }
 
 void Box2DRectShape::set_size(const Vector2 &p_size) {
@@ -705,8 +714,8 @@ void Box2DCapsuleShape::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_radius", "radius"), &Box2DCapsuleShape::set_radius);
 	ClassDB::bind_method(D_METHOD("get_radius"), &Box2DCapsuleShape::get_radius);
 
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "height", PROPERTY_HINT_EXP_RANGE, "0.5,16384,0.5"), "set_height", "get_height");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "radius", PROPERTY_HINT_EXP_RANGE, "0.5,16384,0.5"), "set_radius", "get_radius");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "height", PROPERTY_HINT_EXP_RANGE, "0.5,16384,0.5,or_greater"), "set_height", "get_height");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "radius", PROPERTY_HINT_EXP_RANGE, "0.5,16384,0.5,or_greater"), "set_radius", "get_radius");
 }
 
 void Box2DCapsuleShape::set_height(real_t p_height) {
