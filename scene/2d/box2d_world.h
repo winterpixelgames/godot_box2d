@@ -190,22 +190,6 @@ public:
 		Box2DFixture *local_fixture = nullptr;
 	};
 
-	class GodotSignalCaller {
-		public:
-		String signal_name{""};
-		Node* obj_emitter{nullptr};
-		Node* obj_a{nullptr};
-		Node* obj_b{nullptr};
-
-		GodotSignalCaller(const String &p_signal_name, Node* p_obj_emitter, Node* p_obja, Node* p_objb) {
-			obj_emitter = p_obj_emitter;
-			signal_name = p_signal_name;
-			obj_a = p_obja;
-			obj_b = p_objb;
-		}
-
-	};
-
 private:
 	class PointQueryCallback : public b2QueryCallback {
 	public:
@@ -221,46 +205,6 @@ private:
 		virtual bool ReportFixture(b2Fixture *fixture) override;
 	};
 
-	class Box2dCollisionCallbackQueue  {
-	private:
-		Box2DWorld *world{nullptr};
-		std::list<GodotSignalCaller> collision_callback_queue{};
-	public:
-		inline void set_world(Box2DWorld *p) {
-			world = p;
-		}
-
-		inline bool empty() {
-			return collision_callback_queue.empty();
-		}
-		
-		inline GodotSignalCaller& front() {
-			return collision_callback_queue.front();
-		}
-
-		inline void pop_front() {
-			collision_callback_queue.pop_front();
-		}
-
-		inline void push_back(GodotSignalCaller&& sig) {
-			assert(world);
-			assert(world->world);
-			//collision_callback_queue.push_back(sig);
-			
-			if(world->world->IsLocked() || world->is_pumping_callbacks) {
-				collision_callback_queue.push_back(sig);
-			}
-			else {
-				// Run the signal immediately.
-				if(sig.obj_b) {
-					sig.obj_emitter->emit_signal(sig.signal_name, sig.obj_a, sig.obj_b);
-				}
-				else {
-					sig.obj_emitter->emit_signal(sig.signal_name, sig.obj_a);
-				}
-			}
-		}
-	};
 
 	class ShapeQueryCallback : public b2QueryCallback {
 	public:
@@ -385,12 +329,10 @@ private:
 	Vector2 gravity;
 	bool auto_step{true};
 	bool warm_starting{true};
-	bool is_pumping_callbacks{false};
 	b2World *world = NULL;
 
 	float last_step_delta = 0.0f;
 
-	Box2dCollisionCallbackQueue collision_callback_queue{};
 	ObjectCollisionUpdateQueue<&Box2DCollisionObject::_on_object_entered> object_entered_queue;
 	ObjectCollisionUpdateQueue<&Box2DCollisionObject::_on_object_exited> object_exited_queue;
 	FixtureCollisionUpdateQueue<&Box2DCollisionObject::_on_fixture_entered> fixture_entered_queue;
