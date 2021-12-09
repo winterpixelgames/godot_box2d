@@ -33,6 +33,8 @@ class Box2DCollisionObject : public Node2D {
 
 	Box2DWorld *world_node = NULL;
 
+	bool prev_enabled_state = true;
+
 	void on_parent_created(Node *);
 
 	bool create_b2Body();

@@ -182,6 +182,12 @@ bool Box2DCollisionObject::_is_contact_monitor_enabled() const {
 void Box2DCollisionObject::step(float p_delta) {
 	if (get_script_instance())
 		get_script_instance()->call("_world_step", p_delta);
+
+	const bool enabled = body->IsEnabled();
+	if (enabled != prev_enabled_state) {
+		emit_signal("enabled_state_changed");
+		prev_enabled_state = enabled;
+	}
 }
 
 void Box2DCollisionObject::_notification(int p_what) {

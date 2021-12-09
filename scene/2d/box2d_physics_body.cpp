@@ -130,10 +130,6 @@ void Box2DPhysicsBody::step(float p_delta) {
 			emit_signal("sleeping_state_changed");
 			prev_sleeping_state = awake;
 		}
-		const bool enabled = _get_b2Body()->IsEnabled();
-		if (enabled != prev_enabled_state) {
-			emit_signal("enabled_state_changed");
-		}
 
 		if (get_type() == Mode::MODE_RIGID || (get_type() == Mode::MODE_KINEMATIC && (sync_to_physics || integrate_position))) {
 			sync_state();
