@@ -5,6 +5,7 @@
 #include <core/object.h>
 #include <core/reference.h>
 #include <core/vset.h>
+#include <core/local_vector.h>
 #include <scene/2d/node_2d.h>
 
 #include <box2d/b2_body.h>
@@ -94,7 +95,7 @@ private:
 
 	// Used for move_and_slide/_with_snap
 	std::vector<KinematicCollision> kinematic_colliders;
-	Vector<Ref<Box2DKinematicCollision>> kinematic_colliders_refcache;
+	LocalVector<Ref<Box2DKinematicCollision>> kinematic_colliders_refcache;
 	Ref<Box2DKinematicCollision> kinematic_motion_cache;
 
 	// TODO maybe keep a list of local state we want this class to track wrt a b2body parameter or field

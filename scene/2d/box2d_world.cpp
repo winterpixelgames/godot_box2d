@@ -172,7 +172,7 @@ Array Box2DShapeQueryParameters::get_exclude() const {
 	ret.resize(parameters.exclude.size());
 	int idx = 0;
 	for (Set<const Box2DPhysicsBody *>::Element *E = parameters.exclude.front(); E; E = E->next()) {
-		ret[idx] = int64_t(E->get()->get_instance_id());
+		ret[idx++] = int64_t(E->get()->get_instance_id());
 	}
 	return ret;
 }

@@ -311,11 +311,11 @@ Ref<Box2DKinematicCollision> Box2DPhysicsBody::_get_slide_collision_binding(int 
 	}
 
 	if (kinematic_colliders_refcache[p_bounce].is_null()) {
-		kinematic_colliders_refcache.write[p_bounce].instance();
-		kinematic_colliders_refcache.write[p_bounce]->owner = this;
+		kinematic_colliders_refcache[p_bounce].instance();
+		kinematic_colliders_refcache[p_bounce]->owner = this;
 	}
 
-	kinematic_colliders_refcache.write[p_bounce]->collision = kinematic_colliders[p_bounce];
+	kinematic_colliders_refcache[p_bounce]->collision = kinematic_colliders[p_bounce];
 	return kinematic_colliders_refcache[p_bounce];
 }
 
@@ -1173,7 +1173,7 @@ Box2DPhysicsBody::~Box2DPhysicsBody() {
 
 	for (int i = 0; i < kinematic_colliders_refcache.size(); i++) {
 		if (kinematic_colliders_refcache[i].is_valid()) {
-			kinematic_colliders_refcache.write[i]->owner = nullptr;
+			kinematic_colliders_refcache[i]->owner = nullptr;
 		}
 	}
 
