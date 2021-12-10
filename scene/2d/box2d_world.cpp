@@ -1297,12 +1297,12 @@ Array Box2DWorld::intersect_shape(const Ref<Box2DShapeQueryParameters> &p_query,
 
 	world->QueryAABB(&shape_callback, aabb);
 
-	int n = point_callback.results.size();
+	int n = shape_callback.results.size();
 	Array arr;
 	arr.resize(n);
 
 	int i = 0;
-	for (auto element = point_callback.results.front(); element; element = element->next()) {
+	for (auto element = shape_callback.results.front(); element; element = element->next()) {
 		Box2DFixture *fixture = element->get();
 
 		Dictionary d;
