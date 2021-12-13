@@ -193,7 +193,8 @@ public:
 private:
 	class PointQueryCallback : public b2QueryCallback {
 	public:
-		Set<Box2DFixture *> results; // Use a set so composite fixtures don't double-count towards max_results
+		Set<Box2DFixture *> fixture_results; // Use a set so composite fixtures don't double-count towards max_results
+		std::unordered_set<Box2DCollisionObject *> obj_results;
 
 		b2Vec2 point;
 		int max_results;
@@ -202,16 +203,20 @@ private:
 		bool collide_with_bodies;
 		bool collide_with_sensors;
 
+		bool report_obj_instead;
+
 		virtual bool ReportFixture(b2Fixture *fixture) override;
 	};
 
-
 	class ShapeQueryCallback : public b2QueryCallback {
 	public:
-		Set<Box2DFixture *> results;
+		Set<Box2DFixture *> fixture_results;
+		std::unordered_set<Box2DCollisionObject *> obj_results;
 
 		Ref<Box2DShapeQueryParameters> params;
 		int max_results;
+
+		bool report_obj_instead;
 
 		virtual bool ReportFixture(b2Fixture *fixture) override;
 	};
@@ -431,6 +436,10 @@ public:
 	Dictionary intersect_ray(const Vector2 &p_from, const Vector2 &p_to, const Array &p_exclude = Array(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_sensors = false, uint32_t p_collision_layer = 0x0, int32_t p_group_index = 0);
 	Array intersect_shape(const Ref<Box2DShapeQueryParameters> &p_query, int p_max_results = 32);
 	Array cast_motion(const Ref<Box2DShapeQueryParameters> &p_query);
+	// TODO raycasting should offer an API congruent to intersect_shape
+
+	int intersect_point_fast(Array p_out_array, const Vector2 &p_point, int p_max_results = 32, const Array &p_exclude = Array(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_sensors = false, uint32_t p_collision_layer = 0x0, int32_t p_group_index = 0);
+	int intersect_shape_fast(Array p_out_array, const Ref<Box2DShapeQueryParameters> &p_query, int p_max_results = 32);
 
 	// This is by-default continuous collision. Is this slow? TODO test or remove commented code
 	bool body_test_motion(const Box2DPhysicsBody *p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, MotionResult *r_result = nullptr);

@@ -712,6 +712,9 @@ void Box2DWorld::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("cast_motion", "query"), &Box2DWorld::cast_motion);
 	//ClassDB::bind_method(D_METHOD("collide_shape", "shape", "max_results"), &PhysicsDirectSpaceState2D::_collide_shape, DEFVAL(32));
 
+	ClassDB::bind_method(D_METHOD("intersect_point_fast", "output", "point", "max_results", "exclude", "collision_mask", "collide_with_bodies", "collide_with_sensors", "collision_layer", "group"), &Box2DWorld::intersect_point_fast, DEFVAL(32), DEFVAL(Array()), DEFVAL(0xFFFFFFFF), DEFVAL(true), DEFVAL(false), DEFVAL(0x0), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("intersect_shape_fast", "output", "query", "max_results"), &Box2DWorld::intersect_shape_fast, DEFVAL(32));
+
 	ClassDB::bind_method(D_METHOD("query_aabb", "aabb", "target", "method"), &Box2DWorld::query_aabb);
 	ClassDB::bind_method(D_METHOD("raycast", "from", "to", "target", "method"), &Box2DWorld::raycast);
 
@@ -1187,9 +1190,10 @@ bool Box2DWorld::get_warm_starting() const {
 Array Box2DWorld::intersect_point(const Vector2 &p_point, int p_max_results, const Array &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_sensors, uint32_t p_collision_layer, int32_t p_group_index) {
 	// This function uses queries in Box2DWorld-local space, not global space
 
-	point_callback.results.clear();
+	point_callback.fixture_results.clear();
 	point_callback.point = gd_to_b2(p_point);
 	point_callback.max_results = p_max_results;
+	point_callback.report_obj_instead = false;
 
 	point_callback.exclude.clear();
 	for (int i = 0; i < p_exclude.size(); i++) {
@@ -1206,12 +1210,12 @@ Array Box2DWorld::intersect_point(const Vector2 &p_point, int p_max_results, con
 
 	world->QueryAABB(&point_callback, gd_to_b2(Rect2(p_point, Size2(0, 0))));
 
-	int n = point_callback.results.size();
+	int n = point_callback.fixture_results.size();
 	Array arr;
 	arr.resize(n);
 
 	int i = 0;
-	for (auto element = point_callback.results.front(); element; element = element->next()) {
+	for (auto element = point_callback.fixture_results.front(); element; element = element->next()) {
 		Box2DFixture *fixture = element->get();
 
 		Dictionary d;
@@ -1269,9 +1273,10 @@ Dictionary Box2DWorld::intersect_ray(const Vector2 &p_from, const Vector2 &p_to,
 Array Box2DWorld::intersect_shape(const Ref<Box2DShapeQueryParameters> &p_query, int p_max_results) {
 	// This function uses queries in Box2DWorld-local space, not global space
 
-	shape_callback.results.clear();
+	shape_callback.fixture_results.clear();
 	shape_callback.params = p_query;
 	shape_callback.max_results = p_max_results;
+	shape_callback.report_obj_instead = false;
 
 	// Calculate shape aabb
 	const Box2DShape *shape = p_query.ptr()->shape_ref.ptr();
@@ -1297,12 +1302,12 @@ Array Box2DWorld::intersect_shape(const Ref<Box2DShapeQueryParameters> &p_query,
 
 	world->QueryAABB(&shape_callback, aabb);
 
-	int n = shape_callback.results.size();
+	int n = shape_callback.fixture_results.size();
 	Array arr;
 	arr.resize(n);
 
 	int i = 0;
-	for (auto element = shape_callback.results.front(); element; element = element->next()) {
+	for (auto element = shape_callback.fixture_results.front(); element; element = element->next()) {
 		Box2DFixture *fixture = element->get();
 
 		Dictionary d;
@@ -1371,6 +1376,95 @@ Array Box2DWorld::cast_motion(const Ref<Box2DShapeQueryParameters> &p_query) {
 	ret.append(toi);
 	ret.append(t_safe);
 	return ret;
+}
+
+int Box2DWorld::intersect_point_fast(Array p_out_array, const Vector2 &p_point, int p_max_results, const Array &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_sensors, uint32_t p_collision_layer, int32_t p_group_index) {
+	// Memory-friendly impl that writes Box2DPhysicsBody outputs to a preallocated array
+	point_callback.obj_results.clear();
+	point_callback.point = gd_to_b2(p_point);
+	point_callback.max_results = p_max_results;
+	point_callback.report_obj_instead = true;
+
+	point_callback.exclude.clear();
+	for (int i = 0; i < p_exclude.size(); i++) {
+		Object *obj = ObjectDB::get_instance(ObjectID(p_exclude[i]));
+		Box2DPhysicsBody *node = Object::cast_to<Box2DPhysicsBody>(obj);
+		if (node)
+			point_callback.exclude.insert(node);
+	}
+	point_callback.filter.maskBits = p_collision_mask;
+	point_callback.filter.categoryBits = p_collision_layer;
+	point_callback.filter.groupIndex = p_group_index;
+	point_callback.collide_with_bodies = p_collide_with_bodies;
+	point_callback.collide_with_sensors = p_collide_with_sensors;
+
+	world->QueryAABB(&point_callback, gd_to_b2(Rect2(p_point, Size2(0, 0))));
+	
+	int before_size = p_out_array.size();
+	int i = 0;
+	for (Box2DCollisionObject *coll_obj : point_callback.obj_results) {
+		while (i >= p_out_array.size()) {
+			p_out_array.resize(p_out_array.size() * 2);
+		}
+
+		p_out_array[i] = coll_obj;
+		++i;
+	}
+	if (p_out_array.size() > before_size) {
+		WARN_PRINT("Output buffer size was reallocated from " + itos(before_size) + " to " + itos(p_out_array.size()));
+	}
+
+	return i;
+}
+
+int Box2DWorld::intersect_shape_fast(Array p_out_array, const Ref<Box2DShapeQueryParameters> &p_query, int p_max_results) {
+	// Memory-friendly impl that writes Box2DPhysicsBody outputs to a preallocated array
+
+	shape_callback.obj_results.clear();
+	shape_callback.params = p_query;
+	shape_callback.max_results = p_max_results;
+	shape_callback.report_obj_instead = true;
+
+	// Calculate shape aabb
+	// TODO would be nice to extract this to a function
+	const Box2DShape *shape = p_query.ptr()->shape_ref.ptr();
+	b2AABB aabb;
+	if (shape->is_composite_shape()) {
+		const Vector<const b2Shape *> b2shapes = shape->get_shapes();
+		for (int i = 0; i < b2shapes.size(); ++i) {
+			const b2Shape *b2shape = b2shapes[i];
+			for (int j = 0; j < b2shape->GetChildCount(); ++j) {
+				b2AABB child_aabb;
+				b2shape->ComputeAABB(&child_aabb, gd_to_b2(p_query->get_transform()), j);
+				aabb.Combine(child_aabb);
+			}
+		}
+	} else {
+		const b2Shape *b2shape = shape->get_shape();
+		for (int i = 0; i < b2shape->GetChildCount(); ++i) {
+			b2AABB child_aabb;
+			b2shape->ComputeAABB(&child_aabb, gd_to_b2(p_query->get_transform()), i);
+			aabb.Combine(child_aabb);
+		}
+	}
+
+	world->QueryAABB(&shape_callback, aabb);
+
+	int before_size = p_out_array.size();
+	int i = 0;
+	for (Box2DCollisionObject *coll_obj : shape_callback.obj_results) {
+		while (i >= p_out_array.size()) {
+			p_out_array.resize(p_out_array.size() * 2);
+		}
+
+		p_out_array[i] = coll_obj;
+		++i;
+	}
+	if (p_out_array.size() > before_size) {
+		WARN_PRINT("Output buffer size was reallocated from " + itos(before_size) + " to " + itos(p_out_array.size()));
+	}
+
+	return i;
 }
 
 bool Box2DWorld::body_test_motion(const Box2DPhysicsBody *p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, MotionResult *r_result) {
@@ -1501,8 +1595,13 @@ bool Box2DWorld::PointQueryCallback::ReportFixture(b2Fixture *fixture) {
 		return true;
 
 	// Add to results
-	results.insert(fixture->GetUserData().owner);
-	return results.size() < max_results;
+	if (report_obj_instead) {
+		obj_results.insert(fixture->GetUserData().owner->get_owner());
+		return obj_results.size() < max_results;
+	} else {
+		fixture_results.insert(fixture->GetUserData().owner);
+		return fixture_results.size() < max_results;
+	}
 }
 
 float Box2DWorld::RaycastQueryCallback::ReportFixture(b2Fixture *fixture, const b2Vec2 &point, const b2Vec2 &normal, float fraction) {
@@ -1547,8 +1646,13 @@ bool Box2DWorld::ShapeQueryCallback::ReportFixture(b2Fixture *fixture) {
 	}
 
 	// Add to results
-	results.insert(fixture->GetUserData().owner);
-	return results.size() < max_results;
+	if (report_obj_instead) {
+		obj_results.insert(fixture->GetUserData().owner->get_owner());
+		return obj_results.size() < max_results;
+	} else {
+		fixture_results.insert(fixture->GetUserData().owner);
+		return fixture_results.size() < max_results;
+	}
 }
 
 Box2DWorld* Box2DWorld::find_world(const Node* self)
