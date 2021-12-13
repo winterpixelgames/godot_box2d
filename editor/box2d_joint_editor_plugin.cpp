@@ -950,8 +950,8 @@ void Box2DJointEditor::edit(Node *p_node) {
 }
 
 void Box2DJointEditor::_bind_methods() {
-	ClassDB::bind_method("_node_removed", &Box2DJointEditor::_node_removed);
-	ClassDB::bind_method("_menu_option", &Box2DJointEditor::_menu_option);
+	ClassDB::bind_method(D_METHOD("_node_removed"), &Box2DJointEditor::_node_removed);
+	ClassDB::bind_method(D_METHOD("_menu_option"), &Box2DJointEditor::_menu_option);
 }
 
 Box2DJointEditor::Box2DJointEditor(EditorNode *p_editor) :

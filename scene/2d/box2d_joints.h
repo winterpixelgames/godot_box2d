@@ -113,6 +113,8 @@ protected:
 
 	void reset_joint_anchors();
 
+	void step(float p_delta);
+
 public:
 	virtual String get_configuration_warning() const override;
 

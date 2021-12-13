@@ -135,21 +135,21 @@ void Box2DJoint::update_joint_bodies() {
 	// Only recreate the joint if it will do anything
 	if (joint_invalid || bodies_changed) {
 		// Clear previous cache
-		if (bodyA_cache) {
+		if (bodyA_cache != 0) {
 			Box2DPhysicsBody *body_a = Object::cast_to<Box2DPhysicsBody>(ObjectDB::get_instance(bodyA_cache));
 			if (body_a) {
 				body_a->joints.erase(this);
 				body_a->disconnect("tree_entered", this, "_node_a_tree_entered");
 			}
-			bodyA_cache = 0;
+			bodyA_cache = ObjectID();
 		}
-		if (bodyB_cache) {
+		if (bodyB_cache != 0) {
 			Box2DPhysicsBody *body_b = Object::cast_to<Box2DPhysicsBody>(ObjectDB::get_instance(bodyB_cache));
 			if (body_b) {
 				body_b->joints.erase(this);
 				body_b->disconnect("tree_entered", this, "_node_b_tree_entered");
 			}
-			bodyB_cache = 0;
+			bodyB_cache = ObjectID();
 		}
 
 		// If valid, update node cache
@@ -225,11 +225,14 @@ void Box2DJoint::_notification(int p_what) {
 			// Will attempt to recreate in POST_ENTER_TREE.
 			if (new_world != world_node) {
 				if (world_node) {
-					world_node->joints.erase(this);
+					world_node->joint_owners.erase(this);
 				}
 				destroy_b2Joint();
 
 				world_node = new_world;
+				if (world_node) {
+					world_node->joint_owners.insert(this);
+				}
 			}
 
 			if (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_collisions_hint()) {
@@ -345,9 +348,6 @@ void Box2DJoint::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_reaction_force"), &Box2DJoint::get_reaction_force);
 	ClassDB::bind_method(D_METHOD("get_reaction_torque"), &Box2DJoint::get_reaction_torque);
 
-	ClassDB::bind_method(D_METHOD("_node_a_tree_entered"), &Box2DJoint::_node_a_tree_entered);
-	ClassDB::bind_method(D_METHOD("_node_b_tree_entered"), &Box2DJoint::_node_b_tree_entered);
-
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "node_a"), "set_node_a", "get_node_a");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "node_b"), "set_node_b", "get_node_b");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_connected"), "set_collide_connected", "get_collide_connected");
@@ -359,6 +359,9 @@ void Box2DJoint::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "max_torque", PROPERTY_HINT_EXP_RANGE, "0,65535,0.01"), "set_max_torque", "get_max_torque");
 
 	ADD_SIGNAL(MethodInfo("joint_broken", PropertyInfo(Variant::VECTOR2, "break_force"), PropertyInfo(Variant::REAL, "break_torque")));
+
+	ClassDB::bind_method(D_METHOD("_node_a_tree_entered"), &Box2DJoint::_node_a_tree_entered);
+	ClassDB::bind_method(D_METHOD("_node_b_tree_entered"), &Box2DJoint::_node_b_tree_entered);
 }
 
 String Box2DJoint::get_configuration_warning() const {
@@ -479,6 +482,24 @@ void Box2DJoint::reset_joint_anchors() {
 
 	_change_notify("anchor_a");
 	_change_notify("anchor_b");
+}
+
+void Box2DJoint::step(float p_delta) {
+	if (breaking_enabled && joint) {
+		Vector2 force = get_reaction_force();
+		real_t torque = abs(get_reaction_torque());
+
+		const bool exceeded_force = max_force > 0 && force.length() > max_force;
+		const bool exceeded_torque = max_torque > 0 && torque > max_torque;
+
+		if (exceeded_force || exceeded_torque) {
+			emit_signal("joint_broken", force, torque);
+			set_broken(true);
+		}
+	}
+
+	if (get_script_instance())
+		get_script_instance()->call("_world_step", p_delta);
 }
 
 void Box2DJoint::set_collide_connected(bool p_collide) {

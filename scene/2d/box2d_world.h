@@ -4,6 +4,8 @@
 #include <core/resource.h>
 #include <core/object.h>
 #include <core/reference.h>
+#include <core/set.h>
+#include <core/vset.h>
 #include <scene/2d/node_2d.h>
 
 #include <box2d/b2_contact.h>
@@ -13,6 +15,10 @@
 #include <box2d/b2_world_callbacks.h>
 
 #include "../../util/box2d_types_converter.h"
+#include "box2d_collision_object.h"
+
+#include <deque>
+#include <unordered_set>
 
 #include <list>
 
@@ -54,142 +60,268 @@ struct Box2DContactPoint {
 };
 
 struct ContactBufferManifold {
-	Box2DContactPoint points[b2_maxManifoldPoints];
-	int count = 0;
+	Box2DContactPoint points[b2_maxManifoldPoints]{};
 
-	// TODO Optimize? These functions may be overkill, but everything currently works this way
-
-	inline void insert(Box2DContactPoint &p_point, int p_idx) {
-		ERR_FAIL_COND(count + 1 > b2_maxManifoldPoints);
+	inline void set(Box2DContactPoint &p_point, int p_idx) {
 		ERR_FAIL_COND(p_idx < 0 || p_idx >= b2_maxManifoldPoints);
-		ERR_FAIL_COND(p_idx > count); // Can't insert a point leaving a null at the index below
-
-		// Shift points up
-		if (p_idx < count) {
-			for (int i = count; i > p_idx; --i) {
-				points[i] = points[i - 1];
-			}
-		}
+		if (points[p_idx].id != -1)
+			ERR_FAIL_COND(points[p_idx].id != -1);
 		points[p_idx] = p_point;
-
-		++count;
 	}
 
-	inline void remove(int p_idx) {
-		ERR_FAIL_COND(p_idx < 0 || p_idx >= count || p_idx >= b2_maxManifoldPoints);
+	inline void swap() {
+		ERR_FAIL_COND(b2_maxManifoldPoints != 2); // affirm in case this ever changes(?) - swap algo would need to become smart
+		const Box2DContactPoint temp = points[0];
+		points[0] = points[1];
+		points[1] = temp;
+	}
 
-		// Shift points down
-		if (p_idx < count - 1) {
-			for (int i = p_idx; i < count - 1; ++i) {
-				// There's a buffer overflow warning for this line but I don't believe it
-				points[i] = points[i + 1];
+	inline void erase(int p_idx) {
+		ERR_FAIL_COND(p_idx < 0 || p_idx >= b2_maxManifoldPoints);
+		ERR_FAIL_COND(points[p_idx].id == -1);
+		points[p_idx].id = -1;
+	}
+
+	inline bool is_empty() {
+		for (int i = 0; i < b2_maxManifoldPoints; ++i) {
+			if (points[i].id != -1) {
+				return false;
 			}
-			points[count - 1].id = -1;
 		}
-
-		--count;
+		return true;
 	}
-};
-
-class Box2DShapeQueryParameters : public Reference {
-	GDCLASS(Box2DShapeQueryParameters, Reference);
-
-	Ref<Box2DShape> shape;
-	Transform2D transform;
-	//Vector2 motion; // TODO does Box2D support this?
-	//Set<Ref<Box2DPhysicsBody>> exclude; // TODO figure out how to use nodes as parameters in bound methods
-	uint32_t collision_mask;
-
-	// TODO a bunch of shit ugh
 };
 
 class Box2DWorld;
 class Box2DPhysicsBody;
 
+struct MotionQueryParameters {
+	Transform2D transform = Transform2D();
+
+	Set<const Box2DPhysicsBody *> exclude;
+	// potential addition: exclude fixtures
+	b2Filter filter; // TODO If/when we fork Box2D, filters get 32bit data
+	bool collide_with_bodies = true; // TODO might be better named as "collide_with_solids"
+	bool collide_with_sensors = false;
+	bool ignore_dynamic = false;
+
+	// Properties exclusive for cast_motion
+	Vector2 motion = Vector2(0, 0);
+	float rotation = 0.0f; // TODO should these be combined to Transform2D?
+	Vector2 local_center = Vector2(0, 0); // TODO rename shape_local_center
+	//float motion_timedelta_for_prediction = 1/60;
+};
+
+class Box2DShapeQueryParameters : public Reference {
+	GDCLASS(Box2DShapeQueryParameters, Reference);
+
+	friend class Box2DWorld;
+
+	Ref<Box2DShape> shape_ref;
+	MotionQueryParameters parameters;
+
+protected:
+	static void _bind_methods();
+
+public:
+	const b2Filter &_get_filter() const;
+	Set<const Box2DPhysicsBody *> _get_exclude() const;
+
+	void set_shape(const RES &p_shape_ref);
+	RES get_shape() const;
+
+	void set_transform(const Transform2D &p_transform);
+	Transform2D get_transform() const;
+
+	void set_motion(const Vector2 &p_motion);
+	Vector2 get_motion() const;
+
+	void set_motion_rotation(float p_rotation);
+	float get_motion_rotation() const;
+
+	void set_motion_transform(const Transform2D &p_transform);
+	Transform2D get_motion_transform() const;
+
+	void set_motion_local_center(const Vector2 &p_local_center);
+	Vector2 get_motion_local_center() const;
+
+	void set_collision_layer(int p_layer);
+	int get_collision_layer() const;
+
+	void set_collision_mask(int p_collision_mask);
+	int get_collision_mask() const;
+
+	void set_group_index(int p_index);
+	int get_group_index() const;
+
+	void set_collide_with_bodies(bool p_enable);
+	bool is_collide_with_bodies_enabled() const;
+
+	void set_collide_with_sensors(bool p_enable);
+	bool is_collide_with_sensors_enabled() const;
+
+	void set_ignore_rigid(bool p_enable);
+	bool is_ignoring_rigid() const;
+
+	// Using ObjectIDs (int64_t) in an Array so that we can bind these methods
+	void set_exclude(const Array &p_exclude);
+	Array get_exclude() const;
+};
+
+class Box2DPhysicsTestMotionResult;
+
 class Box2DWorld : public Node2D, public virtual b2DestructionListener, public virtual b2ContactFilter, public virtual b2ContactListener {
 	GDCLASS(Box2DWorld, Node2D);
 
-	friend class Box2DPhysicsBody;
+	friend class Box2DCollisionObject;
 	friend class Box2DJoint;
 
+public:
+	struct MotionResult {
+		Vector2 motion;
+		Vector2 remainder;
+		float t; // TOI with respect to motion [0, 1]
+		bool colliding;
+
+		Vector2 collision_point;
+		Vector2 collision_normal;
+		Vector2 collider_velocity;
+		Box2DFixture *collider_fixture = nullptr;
+		Box2DFixture *local_fixture = nullptr;
+	};
+
 private:
-	// TODO Refactor this callback garbage.
-	//      It may make sense to do this when/if shape queries are implemented.
-	//      These at least need renamed.
-	class QueryCallback : public b2QueryCallback {
+	class PointQueryCallback : public b2QueryCallback {
 	public:
-		Vector<b2Fixture *> results;
-
-		Box2DShapeQueryParameters params;
-
-		virtual bool ReportFixture(b2Fixture *fixture) override;
-	};
-
-	class GodotSignalCaller {
-		public:
-		String signal_name{""};
-		Node* obj_emitter{nullptr};
-		Node* obj_a{nullptr};
-		Node* obj_b{nullptr};
-
-		GodotSignalCaller(const String &p_signal_name, Node* p_obj_emitter, Node* p_obja, Node* p_objb) {
-			obj_emitter = p_obj_emitter;
-			signal_name = p_signal_name;
-			obj_a = p_obja;
-			obj_b = p_objb;
-		}
-
-	};
-
-	class IntersectPointCallback : public b2QueryCallback {
-	public:
-		Vector<b2Fixture *> results;
+		Set<Box2DFixture *> results; // Use a set so composite fixtures don't double-count towards max_results
 
 		b2Vec2 point;
 		int max_results;
-		//Set<Ref<Box2DPhysicsBody> > exclude;
+		Set<const Box2DPhysicsBody *> exclude;
+		b2Filter filter;
+		bool collide_with_bodies;
+		bool collide_with_sensors;
 
 		virtual bool ReportFixture(b2Fixture *fixture) override;
 	};
 
-	class Box2dCollisionCallbackQueue  {
-	private:
-		Box2DWorld *world{nullptr};
-		std::list<GodotSignalCaller> collision_callback_queue{};
+
+	class ShapeQueryCallback : public b2QueryCallback {
 	public:
-		inline void set_world(Box2DWorld *p) {
-			world = p;
-		}
+		Set<Box2DFixture *> results;
 
-		inline bool empty() {
-			return collision_callback_queue.empty();
-		}
-		
-		inline GodotSignalCaller& front() {
-			return collision_callback_queue.front();
-		}
+		Ref<Box2DShapeQueryParameters> params;
+		int max_results;
 
-		inline void pop_front() {
-			collision_callback_queue.pop_front();
-		}
+		virtual bool ReportFixture(b2Fixture *fixture) override;
+	};
 
-		inline void push_back(GodotSignalCaller&& sig) {
-			assert(world);
-			assert(world->world);
-			//collision_callback_queue.push_back(sig);
-			
-			if(world->world->IsLocked() || world->is_pumping_callbacks) {
-				collision_callback_queue.push_back(sig);
+	class RaycastQueryCallback : public b2RayCastCallback {
+	public:
+		struct Result {
+			b2Fixture *fixture = NULL;
+			b2Vec2 point;
+			b2Vec2 normal;
+			// float fraction; // TODO maybe we'll want this
+		};
+
+		Result result;
+
+		Set<const Box2DPhysicsBody *> exclude;
+		b2Filter filter;
+		bool collide_with_bodies;
+		bool collide_with_sensors;
+
+		virtual float ReportFixture(b2Fixture *fixture, const b2Vec2 &point, const b2Vec2 &normal, float fraction) override;
+	};
+
+	class UserAABBQueryCallback : public b2QueryCallback {
+	public:
+		std::unordered_set<const Box2DFixture *> handled_fixtures;
+		Object *callback_owner = NULL;
+		String callback_func;
+
+		virtual bool ReportFixture(b2Fixture *fixture) override;
+	};
+
+	class UserRaycastQueryCallback : public b2RayCastCallback {
+	public:
+		std::unordered_set<const Box2DFixture *> handled_fixtures;
+		Object *callback_owner = NULL;
+		String callback_func;
+
+		virtual float ReportFixture(b2Fixture *fixture, const b2Vec2 &point, const b2Vec2 &normal, float fraction) override;
+	};
+
+	struct CastQueryWrapper { // TODO rename this. It's no longer relevant to just cast_motion
+		const b2BroadPhase *broadPhase;
+
+		MotionQueryParameters params;
+		int max_results = -1;
+
+		Vector<b2FixtureProxy *> results;
+
+		bool QueryCallback(int32 proxyId);
+	};
+	
+	template <void (Box2DCollisionObject::*on_object_inout)(Box2DCollisionObject *)>
+	class ObjectCollisionUpdateQueue {
+	private:
+		struct CollisionUpdatePair {
+			Box2DCollisionObject *function_owner;
+			Box2DCollisionObject *transient;
+		};
+		std::deque<CollisionUpdatePair> queue{};
+		bool pumping{false};
+
+	public:
+		inline void push_back(Box2DCollisionObject *p_caller, Box2DCollisionObject *p_transient, const bool p_queued = true) {
+			if (p_queued || pumping) {
+				queue.push_back({ p_caller, p_transient });
+			} else {
+				(p_caller->*on_object_inout)(p_transient);
 			}
-			else {
-				// Run the signal immediately.
-				if(sig.obj_b) {
-					sig.obj_emitter->emit_signal(sig.signal_name, sig.obj_a, sig.obj_b);
-				}
-				else {
-					sig.obj_emitter->emit_signal(sig.signal_name, sig.obj_a);
-				}
+		}
+
+		inline void call_and_clear() {
+			pumping = true;
+			while (!queue.empty()) {
+				CollisionUpdatePair *pair = &queue.front();
+				(pair->function_owner->*on_object_inout)(pair->transient);
+				queue.pop_front();
 			}
+			pumping = false;
+		}
+	};
+
+	template <void (Box2DCollisionObject::*on_fixture_inout)(Box2DFixture *, Box2DFixture *)>
+	class FixtureCollisionUpdateQueue {
+	private:
+		struct CollisionUpdatePair {
+			Box2DCollisionObject *function_owner;
+			Box2DFixture *transient;
+			Box2DFixture *self;
+		};
+		std::deque<CollisionUpdatePair> queue{};
+		bool pumping{false};
+
+	public:
+		inline void push_back(Box2DCollisionObject *p_caller, Box2DFixture *p_transient, Box2DFixture *p_self, const bool p_queued = true) {
+			if (p_queued || pumping) {
+				queue.push_back({ p_caller, p_transient, p_self });
+			} else {
+				(p_caller->*on_fixture_inout)(p_transient, p_self);
+			}
+		}
+
+		inline void call_and_clear() {
+			pumping = true;
+			while (!queue.empty()) {
+				CollisionUpdatePair *pair = &queue.front();
+				(pair->function_owner->*on_fixture_inout)(pair->transient, pair->self);
+				queue.pop_front();
+			}
+			pumping = false;
 		}
 	};
 
@@ -197,24 +329,33 @@ private:
 	Vector2 gravity;
 	bool auto_step{true};
 	bool warm_starting{true};
-	bool is_pumping_callbacks{false};
-	b2World *world;
+	b2World *world = NULL;
 
-	Box2dCollisionCallbackQueue collision_callback_queue{};
+	float last_step_delta = 0.0f;
 
-	Set<Box2DPhysicsBody *> bodies;
-	Set<Box2DJoint *> joints;
+	ObjectCollisionUpdateQueue<&Box2DCollisionObject::_on_object_entered> object_entered_queue;
+	ObjectCollisionUpdateQueue<&Box2DCollisionObject::_on_object_exited> object_exited_queue;
+	FixtureCollisionUpdateQueue<&Box2DCollisionObject::_on_fixture_entered> fixture_entered_queue;
+	FixtureCollisionUpdateQueue<&Box2DCollisionObject::_on_fixture_exited> fixture_exited_queue;
+
+	// TODO make sure these are using the best data structure
+	Set<Box2DCollisionObject *> body_owners;
+	Set<Box2DJoint *> joint_owners;
+
+	// b2World Callbacks
+	// TODO extract into classes
 
 	virtual void SayGoodbye(b2Joint *joint) override;
 	virtual void SayGoodbye(b2Fixture *fixture) override;
 
 	virtual bool ShouldCollide(b2Fixture *fixtureA, b2Fixture *fixtureB) override;
 
+	// TODO class ContactManager
 	int32_t next_contact_id = 0;
 	bool flag_rescan_contacts_monitored = false;
 	HashMap<uint64_t, ContactBufferManifold> contact_buffer;
 
-	inline void try_buffer_contact(b2Contact *contact, int i);
+	inline ContactBufferManifold *try_buffer_contact(b2Contact *contact, int i);
 
 	virtual void BeginContact(b2Contact *contact) override;
 	virtual void EndContact(b2Contact *contact) override;
@@ -227,12 +368,35 @@ private:
 	/// in a separate data structure.
 	/// Note: this is only called for contacts that are touching, solid, and awake.
 	virtual void PostSolve(b2Contact *contact, const b2ContactImpulse *impulse) override;
+	// end TODO
 
-	QueryCallback aabbCallback;
-	IntersectPointCallback pointCallback;
+	PointQueryCallback point_callback;
+	RaycastQueryCallback ray_callback;
+	ShapeQueryCallback shape_callback;
+
+	UserAABBQueryCallback user_query_callback;
+	UserRaycastQueryCallback user_raycast_callback;
 
 	void create_b2World();
 	void destroy_b2World();
+
+	struct TestMotionTOIResult {
+		bool collision;
+
+		b2Fixture *col_fixture;
+		int col_child_index;
+
+		int test_shape_index;
+		int test_shape_child_index;
+
+		int manifold_pt_count;
+		b2WorldManifold manifold;
+	};
+
+	float _test_motion_toi(const Vector<const b2Shape *> &p_test_shapes, const MotionQueryParameters &p_params, TestMotionTOIResult *r_result);
+
+	bool _solve_position_step(const Vector<const b2Shape *> &p_body_shapes, const MotionQueryParameters &p_params, b2Vec2 &r_correction) const;
+	b2Vec2 _solve_position(const Vector<const b2Shape *> &p_body_shapes, const MotionQueryParameters &p_params, int p_solve_steps = 4) const;
 
 protected:
 	void _notification(int p_what);
@@ -241,8 +405,10 @@ protected:
 public:
 
 	void FindNewContacts();
-	
+
 	void step(float p_step, int32 velocity_iterations = 8, int32 position_iterations = 8);
+
+	float get_last_step_delta() const;
 
 	void set_gravity(const Vector2 &gravity);
 	Vector2 get_gravity() const;
@@ -255,14 +421,25 @@ public:
 
 	//bool isLocked() const;
 
-	Array intersect_point(const Vector2 &p_point, int p_max_results = 32); //, const Vector<Ref<Box2DPhysicsBody> > &p_exclude = Vector<Ref<Box2DPhysicsBody> >() /*, uint32_t p_layers = 0*/);
-	//Array intersect_shape();
-	//Array query_aabb(const Rect2 &p_bounds); // TODO add more parameters like Physics2DDirectSpaceState::_intersect_point
-
 	//void shiftOrigin(const Vector2 &newOrigin);
 
 	// debugDraw
-	
+
+	// Godot space query API
+	// TODO What is collide_shape? Does this return manifold points? //Array collide_shape(const Ref<Box2DShapeQueryParameters> &p_query, int p_max_results = 32);
+	Array intersect_point(const Vector2 &p_point, int p_max_results = 32, const Array &p_exclude = Array(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_sensors = false, uint32_t p_collision_layer = 0x0, int32_t p_group_index = 0);
+	Dictionary intersect_ray(const Vector2 &p_from, const Vector2 &p_to, const Array &p_exclude = Array(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_sensors = false, uint32_t p_collision_layer = 0x0, int32_t p_group_index = 0);
+	Array intersect_shape(const Ref<Box2DShapeQueryParameters> &p_query, int p_max_results = 32);
+	Array cast_motion(const Ref<Box2DShapeQueryParameters> &p_query);
+
+	// This is by-default continuous collision. Is this slow? TODO test or remove commented code
+	bool body_test_motion(const Box2DPhysicsBody *p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, MotionResult *r_result = nullptr);
+	bool _body_test_motion_binding(const Object *p_body, const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia, const Ref<Box2DPhysicsTestMotionResult> &r_result = Ref<Box2DPhysicsTestMotionResult>());
+
+	// Box2D space query API
+	void query_aabb(const Rect2 &p_aabb, Object *p_callback_owner, const String &p_callback_func);
+	void raycast(const Vector2 &p_from, const Vector2 &p_to, Object *p_callback_owner, const String &p_callback_func);
+
 	// Returns the Box2DWorld that should contain the Box2D object passed in
 	// Look for Box2DWorlds that are direct ancestors first (parents, grandparents, etc)
 	// If not found, then look for Box2DWorlds that are uncles as well (siblings of parents, siblings of grandparents, etc)
@@ -270,6 +447,30 @@ public:
 
 	Box2DWorld();
 	~Box2DWorld();
+};
+
+class Box2DPhysicsTestMotionResult : public Reference {
+	GDCLASS(Box2DPhysicsTestMotionResult, Reference);
+
+	friend class Box2DWorld;
+
+	Box2DWorld::MotionResult result;
+
+protected:
+	static void _bind_methods();
+
+public:
+	bool is_colliding() const;
+	Vector2 get_motion() const;
+	Vector2 get_motion_remainder() const;
+
+	Vector2 get_collision_point() const;
+	Vector2 get_collision_normal() const;
+	Vector2 get_collider_velocity() const;
+	Box2DFixture *get_collider_fixture() const;
+	ObjectID get_collider_fixture_id() const;
+	Box2DFixture *get_local_fixture() const;
+	ObjectID get_local_fixture_id() const;
 };
 
 #endif // BOX2D_WORLD_H
