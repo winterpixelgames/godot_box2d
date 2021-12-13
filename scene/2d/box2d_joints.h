@@ -28,6 +28,7 @@
 */
 
 class Box2DWorld;
+class Box2DPhysicsBody;
 
 class Box2DJoint : public Node2D {
 	GDCLASS(Box2DJoint, Node2D);
