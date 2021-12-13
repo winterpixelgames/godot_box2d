@@ -25,6 +25,7 @@
 */
 
 class Box2DKinematicCollision;
+class Box2DPhysicsBody;
 
 class Box2DPhysicsBody : public Box2DCollisionObject {
 	GDCLASS(Box2DPhysicsBody, Box2DCollisionObject);
