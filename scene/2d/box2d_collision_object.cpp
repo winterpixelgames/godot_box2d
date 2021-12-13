@@ -262,8 +262,8 @@ void Box2DCollisionObject::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_filter_data", "collision_layer", "collision_mask", "group_index"), &Box2DCollisionObject::set_filter_data);
 
-	ClassDB::bind_method(D_METHOD("get_colliding_bodies_godot"), &Box2DCollisionObject::get_colliding_bodies);
-	ClassDB::bind_method(D_METHOD("get_colliding_bodies", "array"), &Box2DCollisionObject::get_colliding_bodies_fast);
+	ClassDB::bind_method(D_METHOD("get_colliding_bodies_godot"), &Box2DCollisionObject::get_colliding_bodies); // TODO I'd like to make binding names match
+	ClassDB::bind_method(D_METHOD("get_colliding_bodies", "array"), &Box2DCollisionObject::get_colliding_bodies_fast); // ^
 
 	BIND_VMETHOD(MethodInfo("_world_step", PropertyInfo(Variant::REAL, "delta")));
 
@@ -379,24 +379,24 @@ Array Box2DCollisionObject::get_colliding_bodies() const {
 }
 
 int Box2DCollisionObject::get_colliding_bodies_fast(Array p_array) const {
+	// TODO if used in the broader scope of this module (beyond just circle/sdf shapes) this may report the same body node multiple times
 	const b2ContactEdge* contact_iterator = body->GetContactList();
 	int i = 0;
-	int size = p_array.size();
-	while (contact_iterator)
-	{	
-		if (contact_iterator->contact->IsTouching())
-		{
+	int before_size = p_array.size();
+	while (contact_iterator) {	
+		if (contact_iterator->contact->IsTouching()) {
+			while (i >= p_array.size()) {
+				p_array.resize(p_array.size() * 2);
+			}
+
 			Box2DCollisionObject* godot_node = contact_iterator->other->GetUserData().owner;
-			if(i < size) {
-				p_array[i] = godot_node;
-				i++;
-			}
-			else {
-				print_error("get_colliding_bodies overload");
-				assert(false);
-			}
+			p_array[i] = godot_node;
+			i++;
 		}
 		contact_iterator = contact_iterator->next;
+	}
+	if (p_array.size() > before_size) {
+		WARN_PRINT("Output buffer size was reallocated from " + itos(before_size) + " to " + itos(p_array.size()));
 	}
 	return i;
 }
