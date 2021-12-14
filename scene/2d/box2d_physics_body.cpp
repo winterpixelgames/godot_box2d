@@ -618,7 +618,7 @@ void Box2DPhysicsBody::_set_angular_velocity_no_check(const real_t p_omega) {
 }
 
 void Box2DPhysicsBody::set_angular_velocity(const real_t p_omega) {
-	ERR_FAIL_COND_MSG(get_type() == Mode::MODE_KINEMATIC && !integrate_position, "Kinematic type bodies do not support setting linear_velocity without enabling `integrate_position`.");
+	ERR_FAIL_COND_MSG(get_type() == Mode::MODE_KINEMATIC && !integrate_position, "Kinematic type bodies do not support setting angular_velocity without enabling `integrate_position`.");
 	_set_angular_velocity_no_check(p_omega);
 }
 

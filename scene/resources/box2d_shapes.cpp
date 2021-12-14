@@ -473,7 +473,7 @@ void Box2DPolygonShape::build_polygon() {
 		} break;
 
 		case Box2DPolygonShape::BUILD_SEGMENTS: {
-			ERR_FAIL_COND_MSG(points.size() < 2, "Segment polygon must have N>1 points.");
+			ERR_FAIL_COND_MSG(points.size() < 3, "Segment polygon must have at least 3 points.");
 
 			Vector<Vector2> ordered_points = points;
 			if (invert_order) {
@@ -494,7 +494,7 @@ void Box2DPolygonShape::build_polygon() {
 		} break;
 
 		case Box2DPolygonShape::BUILD_OPEN_SEGMENTS: {
-			ERR_FAIL_COND_MSG(points.size() < 4, "Open segment polygon must have N>3 points.");
+			ERR_FAIL_COND_MSG(points.size() < 2, "Open segment polygon must have at least 2 points.");
 
 			Vector<Vector2> ordered_points = points;
 			if (invert_order) {
