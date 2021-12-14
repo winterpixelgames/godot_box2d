@@ -313,8 +313,15 @@ void Box2DFixture::update_shape() {
 }
 
 void Box2DFixture::update_filterdata() {
+	b2Filter filter;
+	if (override_body_filterdata) {
+		filter = filterDef;
+	} else {
+		ERR_FAIL_COND(!owner_node);
+		filter = owner_node->filterDef;
+	}
 	for (int i = 0; i < fixtures.size(); i++) {
-		fixtures[i]->SetFilterData(filterDef);
+		fixtures[i]->SetFilterData(filter);
 	}
 }
 
