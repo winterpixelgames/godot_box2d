@@ -1059,6 +1059,7 @@ bool Box2DWorld::_solve_position_step(const Vector<const b2Shape *> &p_body_shap
 						float separation;
 
 						switch (local_manifold.type) {
+							case b2Manifold::e_sdf:
 							case b2Manifold::e_circles: {
 								b2Vec2 pointA = b2Mul(xfA, local_manifold.localPoint);
 								b2Vec2 pointB = b2Mul(xfB, local_manifold.points[0].localPoint);
