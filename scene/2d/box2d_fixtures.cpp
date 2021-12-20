@@ -313,6 +313,10 @@ void Box2DFixture::update_shape() {
 }
 
 void Box2DFixture::update_filterdata() {
+	if (fixtures.empty()) {
+		return;
+	}
+
 	b2Filter filter;
 	if (override_body_filterdata) {
 		filter = filterDef;
