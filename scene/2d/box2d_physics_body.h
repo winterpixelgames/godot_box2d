@@ -78,7 +78,7 @@ private:
 	};
 
 	Vector<Box2DAreaItem> colliding_areas;
-	b2Vec2 last_area_gravity;
+	b2Vec2 last_area_gravity{ 0.0f, 0.0f };
 
 	Transform2D prev_xform; // For calculating kinematic body movement velocity
 	Transform2D next_xform;
