@@ -1455,7 +1455,7 @@ int Box2DWorld::intersect_shape_fast(Array p_out_array, const Ref<Box2DShapeQuer
 	int i = 0;
 	for (Box2DCollisionObject *coll_obj : shape_callback.obj_results) {
 		while (i >= p_out_array.size()) {
-			p_out_array.resize(p_out_array.size() * 2);
+			p_out_array.resize(std::max<int>(1,p_out_array.size() * 2));
 		}
 
 		p_out_array[i] = coll_obj;
