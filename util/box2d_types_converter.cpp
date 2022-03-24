@@ -6,6 +6,22 @@
 * @author Brian Semrau
 */
 
+static float box2d_conversion_factor = 50.0f;
+static float box2d_conversion_factor_inv = 1.0f / 50.0f;
+
+void load_box2d_cached_conversion_factors() {
+	box2d_conversion_factor = static_cast<float>(GLOBAL_GET("physics/2d/box2d_conversion_factor"));
+	box2d_conversion_factor_inv = 1.0f / static_cast<float>(GLOBAL_GET("physics/2d/box2d_conversion_factor"));
+};
+
+float get_box2d_conversion_factor() {
+	return box2d_conversion_factor;
+}
+
+float get_box2d_conversion_factor_inv() {
+	return box2d_conversion_factor_inv;
+}
+
 // Box2D to Godot
 
 void b2_to_gd(b2Vec2 const &inVal, Vector2 &outVal) {

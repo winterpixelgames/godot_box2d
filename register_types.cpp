@@ -16,8 +16,9 @@
 */
 
 void register_godot_box2d_types() {
-	GLOBAL_DEF("physics/2d/box2d_conversion_factor", 50.0f);
-	ProjectSettings::get_singleton()->set_custom_property_info("physics/2d/box2d_conversion_factor", PropertyInfo(Variant::REAL, "physics/2d/box2d_conversion_factor"));
+	GLOBAL_DEF_RST("physics/2d/box2d_conversion_factor", 50.0f);
+	ProjectSettings::get_singleton()->set_custom_property_info("physics/2d/box2d_conversion_factor", PropertyInfo(Variant::REAL, "physics/2d/box2d_conversion_factor", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
+	load_box2d_cached_conversion_factors();
 
 	ClassDB::register_class<Box2DShapeQueryParameters>();
 	ClassDB::register_class<Box2DWorld>();
