@@ -718,6 +718,8 @@ void Box2DWorld::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("query_aabb", "aabb", "target", "method"), &Box2DWorld::query_aabb);
 	ClassDB::bind_method(D_METHOD("raycast", "from", "to", "target", "method"), &Box2DWorld::raycast);
 
+	ClassDB::bind_method(D_METHOD("query_aabb_fast", "output", "aabb"), &Box2DWorld::query_aabb_fast);
+
 	ClassDB::bind_method(D_METHOD("body_test_motion", "body", "from", "motion", "infinite_inertia", "result"), &Box2DWorld::_body_test_motion_binding, DEFVAL(Variant()));
 
 	ClassDB::bind_method(D_METHOD("step", "delta", "velocity_iterations", "position_iterations"), &Box2DWorld::step, DEFVAL(8), DEFVAL(8));
@@ -1573,6 +1575,28 @@ void Box2DWorld::raycast(const Vector2 &p_from, const Vector2 &p_to, Object *p_c
 	world->RayCast(&user_raycast_callback, gd_to_b2(p_from), gd_to_b2(p_to));
 }
 
+int Box2DWorld::query_aabb_fast(Array p_out_array, const Rect2 &p_aabb) {
+	fast_aabb_callback.obj_results.clear();
+
+	world->QueryAABB(&fast_aabb_callback, gd_to_b2(p_aabb));
+
+	int before_size = p_out_array.size();
+	int i = 0;
+	for (Box2DCollisionObject *coll_obj : fast_aabb_callback.obj_results) {
+		while (i >= p_out_array.size()) {
+			p_out_array.resize(std::max<int>(1,p_out_array.size() * 2));
+		}
+
+		p_out_array[i] = coll_obj;
+		++i;
+	}
+	if (p_out_array.size() > before_size) {
+		WARN_PRINT("Output buffer size was reallocated from " + itos(before_size) + " to " + itos(p_out_array.size()));
+	}
+
+	return i;
+}
+
 Box2DWorld::Box2DWorld() {
 	gravity = GLOBAL_GET("physics/2d/default_gravity_vector");
 	gravity *= real_t(GLOBAL_GET("physics/2d/default_gravity"));
@@ -1654,6 +1678,11 @@ bool Box2DWorld::ShapeQueryCallback::ReportFixture(b2Fixture *fixture) {
 		fixture_results.insert(fixture->GetUserData().owner);
 		return fixture_results.size() < max_results;
 	}
+}
+
+bool Box2DWorld::AABBFastQueryCallback::ReportFixture(b2Fixture *fixture) {
+	obj_results.insert(fixture->GetUserData().owner->get_owner());
+	return true;
 }
 
 Box2DWorld* Box2DWorld::find_world(const Node* self)

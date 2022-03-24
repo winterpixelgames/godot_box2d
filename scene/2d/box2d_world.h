@@ -240,6 +240,13 @@ private:
 		virtual float ReportFixture(b2Fixture *fixture, const b2Vec2 &point, const b2Vec2 &normal, float fraction) override;
 	};
 
+	class AABBFastQueryCallback : public b2QueryCallback {
+	public:
+		std::unordered_set<Box2DCollisionObject *> obj_results;
+
+		virtual bool ReportFixture(b2Fixture *fixture) override;
+	};
+
 	class UserAABBQueryCallback : public b2QueryCallback {
 	public:
 		std::unordered_set<const Box2DFixture *> handled_fixtures;
@@ -378,6 +385,7 @@ private:
 	PointQueryCallback point_callback;
 	RaycastQueryCallback ray_callback;
 	ShapeQueryCallback shape_callback;
+	AABBFastQueryCallback fast_aabb_callback;
 
 	UserAABBQueryCallback user_query_callback;
 	UserRaycastQueryCallback user_raycast_callback;
@@ -448,6 +456,8 @@ public:
 	// Box2D space query API
 	void query_aabb(const Rect2 &p_aabb, Object *p_callback_owner, const String &p_callback_func);
 	void raycast(const Vector2 &p_from, const Vector2 &p_to, Object *p_callback_owner, const String &p_callback_func);
+
+	int query_aabb_fast(Array p_out_array, const Rect2 &p_aabb);
 
 	// Returns the Box2DWorld that should contain the Box2D object passed in
 	// Look for Box2DWorlds that are direct ancestors first (parents, grandparents, etc)
