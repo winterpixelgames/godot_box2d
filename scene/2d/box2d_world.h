@@ -432,6 +432,7 @@ public:
 	void set_warm_starting(bool p_warm_starting);
 	bool get_warm_starting() const;
 
+	b2World *get_b2_world() const;
 	//bool isLocked() const;
 
 	//void shiftOrigin(const Vector2 &newOrigin);

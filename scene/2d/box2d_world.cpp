@@ -1829,6 +1829,10 @@ bool Box2DWorld::CastQueryWrapper::QueryCallback(int32 proxyId) {
 	return max_results == -1 || results.size() < max_results;
 }
 
+b2World *Box2DWorld::get_b2_world() const {
+	return world;
+}
+
 void Box2DPhysicsTestMotionResult::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_colliding"), &Box2DPhysicsTestMotionResult::is_colliding);
 	ClassDB::bind_method(D_METHOD("get_motion"), &Box2DPhysicsTestMotionResult::get_motion);
