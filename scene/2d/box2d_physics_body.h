@@ -169,6 +169,9 @@ public:
 	void set_gravity_scale(real_t p_scale);
 	real_t get_gravity_scale() const;
 
+	void set_time_scale(real_t p_scale);
+	real_t get_time_scale() const;
+
 	void set_type(Mode p_type);
 	Mode get_type() const;
 

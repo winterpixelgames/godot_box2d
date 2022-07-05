@@ -445,6 +445,8 @@ void Box2DPhysicsBody::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_angular_damping"), &Box2DPhysicsBody::get_angular_damping);
 	ClassDB::bind_method(D_METHOD("set_gravity_scale", "gravity_scale"), &Box2DPhysicsBody::set_gravity_scale);
 	ClassDB::bind_method(D_METHOD("get_gravity_scale"), &Box2DPhysicsBody::get_gravity_scale);
+	ClassDB::bind_method(D_METHOD("set_time_scale", "time_scale"), &Box2DPhysicsBody::set_time_scale);
+	ClassDB::bind_method(D_METHOD("get_time_scale"), &Box2DPhysicsBody::get_time_scale);
 	ClassDB::bind_method(D_METHOD("set_type", "type"), &Box2DPhysicsBody::set_type);
 	ClassDB::bind_method(D_METHOD("get_type"), &Box2DPhysicsBody::get_type);
 	ClassDB::bind_method(D_METHOD("set_bullet", "bullet"), &Box2DPhysicsBody::set_bullet);
@@ -503,6 +505,7 @@ void Box2DPhysicsBody::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_sync_to_physics_enabled"), &Box2DPhysicsBody::is_sync_to_physics_enabled);
 
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "gravity_scale", PROPERTY_HINT_RANGE, "-128,128,0.01"), "set_gravity_scale", "get_gravity_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "time_scale", PROPERTY_HINT_RANGE, "0.0,10.0,0.01"), "set_time_scale", "get_time_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "type", PROPERTY_HINT_ENUM, "Static,Kinematic,Rigid"), "set_type", "get_type");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bullet"), "set_bullet", "is_bullet");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "fixed_rotation"), "set_fixed_rotation", "is_fixed_rotation");
@@ -740,6 +743,16 @@ void Box2DPhysicsBody::set_gravity_scale(real_t p_scale) {
 
 real_t Box2DPhysicsBody::get_gravity_scale() const {
 	return bodyDef.gravityScale;
+}
+
+void Box2DPhysicsBody::set_time_scale(real_t p_scale) {
+	if (_get_b2Body())
+		_get_b2Body()->SetTimeScale(p_scale);
+	bodyDef.timeScale = p_scale;
+}
+
+real_t Box2DPhysicsBody::get_time_scale() const {
+	return bodyDef.timeScale;
 }
 
 void Box2DPhysicsBody::set_type(Mode p_type) {
