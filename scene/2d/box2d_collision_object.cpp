@@ -386,7 +386,7 @@ int Box2DCollisionObject::get_colliding_bodies_fast(Array p_array) const {
 	while (contact_iterator) {	
 		if (contact_iterator->contact->IsTouching()) {
 			while (i >= p_array.size()) {
-				p_array.resize(p_array.size() * 2);
+				p_array.resize(MAX(p_array.size() * 2, 1));
 			}
 
 			Box2DCollisionObject* godot_node = contact_iterator->other->GetUserData().owner;
