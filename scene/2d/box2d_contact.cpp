@@ -1,4 +1,5 @@
 #include "box2d_contact.h"
+#include "box2d_fixtures.h"
 #include <core/engine.h>
 
 void Box2DContact::_bind_methods() {
@@ -6,9 +7,9 @@ void Box2DContact::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &Box2DContact::set_enabled);
 	ClassDB::bind_method(D_METHOD("is_enabled"), &Box2DContact::is_enabled);
 	
-	//ClassDB::bind_method(D_METHOD("get_fixture_a"), &Box2DContact::get_fixture_a);
+	ClassDB::bind_method(D_METHOD("get_fixture_a"), &Box2DContact::get_fixture_a);
 	ClassDB::bind_method(D_METHOD("get_child_index_a"), &Box2DContact::get_child_index_a);
-	//ClassDB::bind_method(D_METHOD("get_fixture_b"), &Box2DContact::get_fixture_b);
+	ClassDB::bind_method(D_METHOD("get_fixture_b"), &Box2DContact::get_fixture_b);
 	ClassDB::bind_method(D_METHOD("get_child_index_b"), &Box2DContact::get_child_index_b);
 	ClassDB::bind_method(D_METHOD("set_friction", "friction"), &Box2DContact::set_friction);
 	ClassDB::bind_method(D_METHOD("get_friction"), &Box2DContact::get_friction);
@@ -53,17 +54,17 @@ bool Box2DContact::is_enabled() {
 	return _contact->IsEnabled();
 }
 
-//Box2DFixture* Box2DContact::get_fixture_a() {
-//	return nullptr; //TODO
-//}
+Box2DFixture* Box2DContact::get_fixture_a() {
+	return (Box2DFixture*)_contact->GetFixtureA()->GetUserData().owner;
+}
 	
 int Box2DContact::get_child_index_a() {
 	return _contact->GetChildIndexA();
 }
 
-//Box2DFixture* Box2DContact::get_fixture_b() {
-//	return nullptr; //TODO
-//}
+Box2DFixture* Box2DContact::get_fixture_b() {
+	return (Box2DFixture*)_contact->GetFixtureB()->GetUserData().owner;
+}
 
 int Box2DContact::get_child_index_b() {
 	return _contact->GetChildIndexB();

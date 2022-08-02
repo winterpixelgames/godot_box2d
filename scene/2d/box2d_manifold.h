@@ -20,7 +20,7 @@ protected:
 public:	
 
 	Box2DManifold();
-	virtual ~Box2DManifold();
+	~Box2DManifold();
 };
 
 #endif // BOX2D_MANIFOLD_H

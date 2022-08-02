@@ -5,6 +5,7 @@
 #include <box2d/b2_world.h>
 #include "core/object.h"
 #include "box2d_manifold.h"
+#include "box2d_fixtures.h"
 #include <box2d/b2_fixture.h>
 
 
@@ -32,10 +33,10 @@ public:
 	//b2Contact* GetNext(); //TODO, will need a pool
 	//const b2Contact* GetNext() const;
 
-	//Box2DFixture* get_fixture_a();
+	Box2DFixture* get_fixture_a();
 	int get_child_index_a();
 
-	//Box2DFixture* get_fixture_b();
+	Box2DFixture* get_fixture_b();
 	int get_child_index_b();
 
 	void set_friction(float friction);
@@ -53,7 +54,7 @@ public:
 	float get_tangent_speed();
 
 	Box2DContact();
-	virtual ~Box2DContact();
+	~Box2DContact();
 };
 
 #endif // BOX2D_CONTACT_H
