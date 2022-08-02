@@ -22,6 +22,11 @@
 
 #include <list>
 
+#define BOX2D_VMETHOD_PRE_SOLVE "_pre_solve"
+#define BOX2D_VMETHOD_POST_SOLVE "_post_solve"
+#define BOX2D_VMETHOD_BEGIN_CONTACT "_begin_contact"
+#define BOX2D_VMETHOD_END_CONTACT "_end_contact"
+
 /**
 * @author Brian Semrau
 */
@@ -177,6 +182,13 @@ class Box2DWorld : public Node2D, public virtual b2DestructionListener, public v
 	friend class Box2DJoint;
 
 public:
+
+	// Stringname optimizations...
+	StringName STRINGNAME_pre_solve = BOX2D_VMETHOD_PRE_SOLVE;
+	StringName STRINGNAME_post_solve = BOX2D_VMETHOD_POST_SOLVE;
+	StringName STRINGNAME_begin_contact = BOX2D_VMETHOD_BEGIN_CONTACT;
+	StringName STRINGNAME_end_contact = BOX2D_VMETHOD_END_CONTACT;
+
 	struct MotionResult {
 		Vector2 motion;
 		Vector2 remainder;
