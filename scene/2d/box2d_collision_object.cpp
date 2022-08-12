@@ -5,6 +5,7 @@
 #include "box2d_world.h"
 #include "box2d_fixtures.h"
 #include "box2d_joints.h"
+#include "box2d_contact.h"
 
 #include <vector>
 
@@ -264,6 +265,7 @@ void Box2DCollisionObject::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_colliding_bodies_godot"), &Box2DCollisionObject::get_colliding_bodies); // TODO I'd like to make binding names match
 	ClassDB::bind_method(D_METHOD("get_colliding_bodies", "array"), &Box2DCollisionObject::get_colliding_bodies_fast); // ^
+	ClassDB::bind_method(D_METHOD("get_colliding_contacts", "array"), &Box2DCollisionObject::get_colliding_contacts); // ^
 
 	BIND_VMETHOD(MethodInfo("_world_step", PropertyInfo(Variant::REAL, "delta")));
 
@@ -397,6 +399,24 @@ int Box2DCollisionObject::get_colliding_bodies_fast(Array p_array) const {
 	}
 	if (p_array.size() > before_size) {
 		WARN_PRINT("Output buffer size was reallocated from " + itos(before_size) + " to " + itos(p_array.size()));
+	}
+	return i;
+}
+
+int Box2DCollisionObject::get_colliding_contacts(Array p_array) const {
+	const b2ContactEdge* contact_iterator = body->GetContactList();
+	int i = 0;
+	while (contact_iterator) {	
+		if (contact_iterator->contact->IsTouching()) {
+			if (i >= p_array.size()) {
+				WARN_PRINT("[Box2DCollisionObject] get_colliding_contacts overflowed contacts buffer");
+				break;
+			}
+			Box2DContact* b2_contact = Object::cast_to<Box2DContact>(p_array[i]);
+			b2_contact->_contact = contact_iterator->contact;
+			i++;
+		}
+		contact_iterator = contact_iterator->next;
 	}
 	return i;
 }

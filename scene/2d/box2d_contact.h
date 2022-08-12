@@ -1,18 +1,21 @@
 #ifndef BOX2D_CONTACT_H
 #define BOX2D_CONTACT_H
 
+#include "core/object.h"
+
 #include <box2d/b2_contact.h>
 #include <box2d/b2_world.h>
-#include "core/object.h"
-#include "box2d_manifold.h"
-#include "box2d_fixtures.h"
 #include <box2d/b2_fixture.h>
 
+#include "box2d_manifold.h"
+#include "box2d_fixtures.h"
+#include "box2d_collision_object.h"
 
 class Box2DContact : public Object {
 	GDCLASS(Box2DContact, Object);
 
 friend class Box2DWorld;
+friend class Box2DCollisionObject;
 
 private:
 	b2Contact* _contact{nullptr};
