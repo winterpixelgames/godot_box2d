@@ -301,27 +301,28 @@ inline ContactBufferManifold *Box2DWorld::try_buffer_contact(b2Contact *contact,
 }
 
 void Box2DWorld::BeginContact(b2Contact *contact) {
-	Box2DContact c;
-	c._contact = contact;
+
 	if (get_script_instance() && get_script_instance()->has_method(STRINGNAME_begin_contact)) {
+		Box2DContact c;
+		c._contact = contact;
 		call(STRINGNAME_begin_contact, &c);
 	}
 }
 
 void Box2DWorld::EndContact(b2Contact *contact) {
-	Box2DContact c;
-	c._contact = contact;
 	if (get_script_instance() && get_script_instance()->has_method(STRINGNAME_end_contact)) {
+		Box2DContact c;
+		c._contact = contact;
 		call(STRINGNAME_end_contact, &c);
 	}
 }
 
 void Box2DWorld::PreSolve(b2Contact *contact, const b2Manifold *oldManifold) {
 	Box2DContact c;
-	Box2DManifold m;
-	c._contact = contact;
-	m._manifold = (b2Manifold*)oldManifold; // cast away const
 	if (get_script_instance() && get_script_instance()->has_method(STRINGNAME_pre_solve)) {
+		Box2DManifold m;
+		c._contact = contact;
+		m._manifold = (b2Manifold*)oldManifold; // cast away const
 		call(STRINGNAME_pre_solve, &c, &m);
 	}
 }
