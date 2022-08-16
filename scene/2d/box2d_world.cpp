@@ -318,8 +318,8 @@ void Box2DWorld::EndContact(b2Contact *contact) {
 }
 
 void Box2DWorld::PreSolve(b2Contact *contact, const b2Manifold *oldManifold) {
-	Box2DContact c;
 	if (get_script_instance() && get_script_instance()->has_method(STRINGNAME_pre_solve)) {
+		Box2DContact c;
 		Box2DManifold m;
 		c._contact = contact;
 		m._manifold = (b2Manifold*)oldManifold; // cast away const
