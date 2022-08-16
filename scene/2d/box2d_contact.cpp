@@ -56,7 +56,7 @@ bool Box2DContact::is_enabled() {
 }
 
 Box2DFixture* Box2DContact::get_fixture_a() {
-	return (Box2DFixture*)_contact->GetFixtureA()->GetUserData().owner;
+	return _contact->GetFixtureA()->GetUserData().owner;
 }
 	
 int Box2DContact::get_child_index_a() {
@@ -64,7 +64,7 @@ int Box2DContact::get_child_index_a() {
 }
 
 Box2DFixture* Box2DContact::get_fixture_b() {
-	return (Box2DFixture*)_contact->GetFixtureB()->GetUserData().owner;
+	return _contact->GetFixtureB()->GetUserData().owner;
 }
 
 int Box2DContact::get_child_index_b() {
