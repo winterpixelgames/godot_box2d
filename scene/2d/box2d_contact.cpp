@@ -35,7 +35,6 @@ Box2DContact::Box2DContact() {
 
 Box2DContact::~Box2DContact() {
 	// Nothing
-	print_line("[Box2DContact] ~Box2DContact()");
 }
 
 Box2DManifold* Box2DContact::get_manifold(){
