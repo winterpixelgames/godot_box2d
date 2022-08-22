@@ -46,6 +46,8 @@ bool Box2DJoint::create_b2Joint() {
 		joint->GetBodyA()->SetAwake(true);
 		joint->GetBodyB()->SetAwake(true);
 
+		world_node->joint_owners.insert(this);
+
 		//print_line("joint created");
 		return true;
 	}
@@ -58,7 +60,8 @@ bool Box2DJoint::destroy_b2Joint() {
 		ERR_FAIL_COND_V(!world_node->world, false);
 
 		world_node->world->DestroyJoint(joint);
-		joint = NULL;
+		world_node->joint_owners.erase(this);
+		joint = nullptr;
 
 		//print_line("joint destroyed");
 		return true;
@@ -215,7 +218,12 @@ b2Vec2 Box2DJoint::get_b2_pos() const {
 void Box2DJoint::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_PREDELETE: {
-			destroy_b2Joint();
+			if (world_node) {
+				if (world_node->world) {
+					destroy_b2Joint();
+				}
+				world_node->joint_owners.erase(this);
+			}
 		} break;
 
 		case NOTIFICATION_ENTER_TREE: {
