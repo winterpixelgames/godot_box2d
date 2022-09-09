@@ -328,7 +328,6 @@ void Box2DWorld::PreSolve(b2Contact *contact, const b2Manifold *oldManifold) {
 }
 
 void Box2DWorld::PostSolve(b2Contact *contact, const b2ContactImpulse *impulse) {
-	// TODO:
 	if (get_script_instance() && get_script_instance()->has_method(STRINGNAME_post_solve)) {
 		Box2DContact c;
 		c._contact = contact;

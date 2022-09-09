@@ -29,7 +29,6 @@ private:
 	bool is_touching;
 
 protected:
-	void _notification(int p_what);
 	static void _bind_methods();
 
 public:	
@@ -41,7 +40,7 @@ public:
 	Box2DFixture* get_fixture_b();
 	int get_child_index_b();
 	
-	bool is_touching();
+	bool get_is_touching();
 	float get_friction();
 	float get_restitution();
 	float get_restitution_threshold();

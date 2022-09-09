@@ -16,6 +16,7 @@
 
 #include "../../util/box2d_types_converter.h"
 #include "box2d_collision_object.h"
+#include "box2d_contact_immutable.h"
 
 #include <deque>
 #include <unordered_set>
@@ -357,6 +358,8 @@ private:
 
 	float last_step_delta = 0.0f;
 
+	std::vector<Box2DContactImmutable> buffered_contacts;
+	
 	ObjectCollisionUpdateQueue<&Box2DCollisionObject::_on_object_entered> object_entered_queue;
 	ObjectCollisionUpdateQueue<&Box2DCollisionObject::_on_object_exited> object_exited_queue;
 	FixtureCollisionUpdateQueue<&Box2DCollisionObject::_on_fixture_entered> fixture_entered_queue;

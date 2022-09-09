@@ -6,6 +6,7 @@
 #include "box2d_fixtures.h"
 #include "box2d_joints.h"
 #include "box2d_contact.h"
+#include "box2d_contact_immutable.h"
 
 #include <vector>
 
@@ -412,8 +413,8 @@ int Box2DCollisionObject::get_colliding_contacts(Array p_array) const {
 				WARN_PRINT("[Box2DCollisionObject] get_colliding_contacts overflowed contacts buffer");
 				break;
 			}
-			Box2DContact* b2_contact = Object::cast_to<Box2DContact>(p_array[i]);
-			b2_contact->_contact = contact_iterator->contact;
+			Box2DContactImmutable* box2d_contact = Object::cast_to<Box2DContactImmutable>(p_array[i]);
+			box2d_contact->copy_contact(contact_iterator->contact);
 			i++;
 		}
 		contact_iterator = contact_iterator->next;

@@ -9,6 +9,7 @@
 #include "scene/2d/box2d_joints.h"
 #include "scene/2d/box2d_physics_body.h"
 #include "scene/2d/box2d_contact.h"
+#include "scene/2d/box2d_contact_immutable.h"
 #include "scene/2d/box2d_manifold.h"
 #include "scene/2d/box2d_world.h"
 #include "scene/resources/box2d_shapes.h"
@@ -33,6 +34,7 @@ void register_godot_box2d_types() {
 
 	ClassDB::register_class<Box2DFixture>();
 	ClassDB::register_class<Box2DContact>();
+	ClassDB::register_class<Box2DContactImmutable>();
 	ClassDB::register_class<Box2DManifold>();
 
 	ClassDB::register_virtual_class<Box2DShape>();
