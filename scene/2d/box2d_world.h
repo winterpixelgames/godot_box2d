@@ -33,6 +33,7 @@
 */
 
 class Box2DShape;
+class Box2DJoint;
 
 struct Box2DContactPoint {
 	// This ID is required for inserting this object into a VSet
