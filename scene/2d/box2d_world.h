@@ -20,7 +20,7 @@
 
 #include <deque>
 #include <unordered_set>
-
+#include <vector>
 #include <list>
 
 #define BOX2D_VMETHOD_PRE_SOLVE "_pre_solve"

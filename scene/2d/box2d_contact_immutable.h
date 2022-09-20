@@ -7,9 +7,7 @@
 #include <box2d/b2_world.h>
 #include <box2d/b2_fixture.h>
 
-#include "box2d_manifold.h"
-#include "box2d_fixtures.h"
-#include "box2d_collision_object.h"
+class Box2DFixture;
 
 class Box2DContactImmutable : public Object {
 	GDCLASS(Box2DContactImmutable, Object);
@@ -47,7 +45,7 @@ public:
 	float get_tangent_speed();
 
 	Box2DContactImmutable();
-	~Box2DContactImmutable();
+	virtual ~Box2DContactImmutable();
 };
 
 #endif // BOX2D_CONTACT_IMMUTABLE_H

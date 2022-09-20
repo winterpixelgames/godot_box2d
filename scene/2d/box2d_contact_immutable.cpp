@@ -2,6 +2,10 @@
 #include "box2d_fixtures.h"
 #include <core/engine.h>
 
+#include "box2d_manifold.h"
+#include "box2d_fixtures.h"
+#include "box2d_collision_object.h"
+
 void Box2DContactImmutable::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_fixture_a"), &Box2DContactImmutable::get_fixture_a);
 	ClassDB::bind_method(D_METHOD("get_child_index_a"), &Box2DContactImmutable::get_child_index_a);
