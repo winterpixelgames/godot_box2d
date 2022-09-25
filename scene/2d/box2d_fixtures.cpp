@@ -362,6 +362,13 @@ String Box2DFixture::get_configuration_warning() const {
 		warning += TTR("Box2DFixture only serves to provide collision fixtures to a Box2DCollisionObject node. Please use it within the child hierarchy of Box2DPhysicsBody or Box2DArea to give it collision.");
 	}
 
+	if (shape.is_valid() && !shape->is_local_to_scene()) {
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("The shape resource is not set local to scene. This will cause memory corruption in multithreading!");
+	}
+
 	return warning;
 }
 

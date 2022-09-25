@@ -13,6 +13,7 @@
 */
 
 class CanvasItemEditor;
+class Box2DJoint;
 
 class Box2DJointEditor : public HBoxContainer {
 	GDCLASS(Box2DJointEditor, HBoxContainer);

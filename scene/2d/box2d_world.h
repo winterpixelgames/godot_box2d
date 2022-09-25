@@ -16,17 +16,24 @@
 
 #include "../../util/box2d_types_converter.h"
 #include "box2d_collision_object.h"
+#include "box2d_contact_immutable.h"
 
 #include <deque>
 #include <unordered_set>
-
+#include <vector>
 #include <list>
+
+#define BOX2D_VMETHOD_PRE_SOLVE "_pre_solve"
+#define BOX2D_VMETHOD_POST_SOLVE "_post_solve"
+#define BOX2D_VMETHOD_BEGIN_CONTACT "_begin_contact"
+#define BOX2D_VMETHOD_END_CONTACT "_end_contact"
 
 /**
 * @author Brian Semrau
 */
 
 class Box2DShape;
+class Box2DJoint;
 
 struct Box2DContactPoint {
 	// This ID is required for inserting this object into a VSet
@@ -177,6 +184,13 @@ class Box2DWorld : public Node2D, public virtual b2DestructionListener, public v
 	friend class Box2DJoint;
 
 public:
+
+	// Stringname optimizations...
+	StringName STRINGNAME_pre_solve = BOX2D_VMETHOD_PRE_SOLVE;
+	StringName STRINGNAME_post_solve = BOX2D_VMETHOD_POST_SOLVE;
+	StringName STRINGNAME_begin_contact = BOX2D_VMETHOD_BEGIN_CONTACT;
+	StringName STRINGNAME_end_contact = BOX2D_VMETHOD_END_CONTACT;
+
 	struct MotionResult {
 		Vector2 motion;
 		Vector2 remainder;
@@ -345,6 +359,8 @@ private:
 
 	float last_step_delta = 0.0f;
 
+	std::vector<Box2DContactImmutable> buffered_contacts;
+	
 	ObjectCollisionUpdateQueue<&Box2DCollisionObject::_on_object_entered> object_entered_queue;
 	ObjectCollisionUpdateQueue<&Box2DCollisionObject::_on_object_exited> object_exited_queue;
 	FixtureCollisionUpdateQueue<&Box2DCollisionObject::_on_fixture_entered> fixture_entered_queue;

@@ -110,7 +110,8 @@ public:
 
 	Array get_colliding_bodies() const; // Function exists for Godot feature congruency
 	int get_colliding_bodies_fast(Array p_array) const;
-
+	int get_colliding_contacts(Array p_array) const;
+	
 	Box2DCollisionObject();
 	~Box2DCollisionObject();
 };
