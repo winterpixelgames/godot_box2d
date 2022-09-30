@@ -415,6 +415,8 @@ int Box2DCollisionObject::get_colliding_contacts(Array p_array) const {
 			}
 			Box2DContact* b2_contact = Object::cast_to<Box2DContact>(p_array[i]);
 			b2_contact->_contact = contact_iterator->contact;
+			b2_contact->manifold->_manifold = contact_iterator->contact->GetManifold();
+			contact_iterator->contact->GetWorldManifold(&b2_contact->manifold->_world_manifold);
 			i++;
 		}
 		contact_iterator = contact_iterator->next;

@@ -23,6 +23,7 @@ void Box2DContact::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_tangent_speed", "speed"), &Box2DContact::set_tangent_speed);
 	ClassDB::bind_method(D_METHOD("get_tangent_speed"), &Box2DContact::get_tangent_speed);
 
+	ClassDB::bind_method(D_METHOD("get_manifold"), &Box2DContact::get_manifold);
 }
 
 void Box2DContact::_notification(int p_what) {
@@ -30,16 +31,15 @@ void Box2DContact::_notification(int p_what) {
 }
 
 Box2DContact::Box2DContact() {
-	// Nothing
+	manifold = memnew(Box2DManifold);
 }
 
 Box2DContact::~Box2DContact() {
-	// Nothing
+	delete manifold;
 }
 
 Box2DManifold* Box2DContact::get_manifold(){
-	// TODO
-	return nullptr;
+	return manifold;
 }
 	
 bool Box2DContact::is_touching() {
