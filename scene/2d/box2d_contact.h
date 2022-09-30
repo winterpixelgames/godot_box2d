@@ -19,7 +19,7 @@ friend class Box2DCollisionObject;
 
 private:
 	b2Contact* _contact{nullptr};
-	Box2DManifold* manifold{nullptr};
+	Box2DManifold manifold{};
 
 protected:
 	void _notification(int p_what);

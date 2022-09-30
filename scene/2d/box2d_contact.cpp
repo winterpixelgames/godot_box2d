@@ -31,15 +31,13 @@ void Box2DContact::_notification(int p_what) {
 }
 
 Box2DContact::Box2DContact() {
-	manifold = memnew(Box2DManifold);
 }
 
 Box2DContact::~Box2DContact() {
-	delete manifold;
 }
 
 Box2DManifold* Box2DContact::get_manifold(){
-	return manifold;
+	return &manifold;
 }
 	
 bool Box2DContact::is_touching() {

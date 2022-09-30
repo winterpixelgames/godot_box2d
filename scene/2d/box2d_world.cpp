@@ -323,7 +323,7 @@ void Box2DWorld::PreSolve(b2Contact *contact, const b2Manifold *oldManifold) {
 		Box2DManifold m;
 		c._contact = contact;
 		m._manifold = (b2Manifold*)oldManifold; // cast away const
-		call(STRINGNAME_post_solve, &c, &m);
+		call(STRINGNAME_pre_solve, &c, &m);
 	}
 }
 
@@ -1450,7 +1450,9 @@ Box2DWorld* Box2DWorld::find_world(const Node* self)
 
 	if (!world)
 	{
-		print_line("[Box2DWorld] couldn't find world.");
+		if (!Engine::get_singleton()->is_editor_hint()) {
+			print_line("[Box2DWorld] couldn't find world.");
+		}
 	}
 
 	return world;

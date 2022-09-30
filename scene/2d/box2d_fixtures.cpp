@@ -48,9 +48,17 @@ void Box2DFixture::create_b2Fixture(b2Fixture *&p_fixture_out, const b2FixtureDe
 		} break;
 		case b2Shape::Type::e_polygon: {
 			b2PolygonShape shp = b2PolygonShape(*static_cast<const b2PolygonShape *>(p_def.shape));
+			// transpose of the inverse
+			Transform2D normal_xform = p_shape_xform.affine_inverse();
+			normal_xform = Transform2D( // why is there no Transform2D::basis_transpose
+				normal_xform[0][0], normal_xform[1][0],
+				normal_xform[0][1], normal_xform[1][1],
+				normal_xform[2][0], normal_xform[2][1]
+			);
 			for (int i = 0; i < shp.m_count; i++) {
 				shp.m_vertices[i] = gd_to_b2(p_shape_xform.xform(b2_to_gd(shp.m_vertices[i])));
-				shp.m_normals[i] = gd_to_b2(p_shape_xform.basis_xform(b2_to_gd(shp.m_normals[i])));
+				shp.m_normals[i] = gd_to_b2(normal_xform.basis_xform(b2_to_gd(shp.m_normals[i])));
+				shp.m_normals[i].Normalize();
 			}
 			shp.m_centroid = gd_to_b2(p_shape_xform.xform(b2_to_gd(shp.m_centroid)));
 			finalDef.shape = &shp;
@@ -581,6 +589,8 @@ Box2DFixture::Box2DFixture() {
 	if (Engine::get_singleton()->is_editor_hint()) {
 		set_process_internal(true);
 	}
+
+	set_notify_local_transform(true);
 };
 
 Box2DFixture::~Box2DFixture() {
