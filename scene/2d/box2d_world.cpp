@@ -304,7 +304,7 @@ void Box2DWorld::BeginContact(b2Contact *contact) {
 
 	if (get_script_instance() && get_script_instance()->has_method(STRINGNAME_begin_contact)) {
 		Box2DContact c;
-		c._contact = contact;
+		c._set_contact(contact);
 		call(STRINGNAME_begin_contact, &c);
 	}
 }
@@ -312,7 +312,7 @@ void Box2DWorld::BeginContact(b2Contact *contact) {
 void Box2DWorld::EndContact(b2Contact *contact) {
 	if (get_script_instance() && get_script_instance()->has_method(STRINGNAME_end_contact)) {
 		Box2DContact c;
-		c._contact = contact;
+		c._set_contact(contact);
 		call(STRINGNAME_end_contact, &c);
 	}
 }
@@ -321,7 +321,7 @@ void Box2DWorld::PreSolve(b2Contact *contact, const b2Manifold *oldManifold) {
 	if (get_script_instance() && get_script_instance()->has_method(STRINGNAME_pre_solve)) {
 		Box2DContact c;
 		Box2DManifold m;
-		c._contact = contact;
+		c._set_contact(contact);
 		m._manifold = (b2Manifold*)oldManifold; // cast away const
 		call(STRINGNAME_pre_solve, &c, &m);
 	}
@@ -330,7 +330,7 @@ void Box2DWorld::PreSolve(b2Contact *contact, const b2Manifold *oldManifold) {
 void Box2DWorld::PostSolve(b2Contact *contact, const b2ContactImpulse *impulse) {
 	if (get_script_instance() && get_script_instance()->has_method(STRINGNAME_post_solve)) {
 		Box2DContact c;
-		c._contact = contact;
+		c._set_contact(contact);
 		call(STRINGNAME_post_solve, &c);
 	}
 }

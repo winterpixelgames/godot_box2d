@@ -2,6 +2,12 @@
 #include "box2d_fixtures.h"
 #include <core/engine.h>
 
+void Box2DContact::_set_contact(b2Contact *contact) {
+	this->_contact = contact;
+	this->manifold._manifold = contact->GetManifold();
+	contact->GetWorldManifold(&this->manifold._world_manifold);
+}
+
 void Box2DContact::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_touching"), &Box2DContact::is_touching);
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &Box2DContact::set_enabled);

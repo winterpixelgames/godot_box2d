@@ -21,7 +21,7 @@ void Box2DManifold::_notification(int p_what) {
 }
 
 Vector2 Box2DManifold::get_local_normal() const {
-	return b2_to_gd(_manifold->localNormal);
+	return Vector2(_manifold->localNormal.x, _manifold->localNormal.y);
 }
 
 Vector2 Box2DManifold::get_local_point() const {
@@ -37,7 +37,7 @@ int Box2DManifold::get_point_count() const {
 }
 
 Vector2 Box2DManifold::get_normal() const {
-	return b2_to_gd(_world_manifold.normal);
+	return Vector2(_world_manifold.normal.x, _world_manifold.normal.y);
 }
 
 Vector2 Box2DManifold::get_point(const int p_idx) const {

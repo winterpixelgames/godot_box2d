@@ -10,6 +10,7 @@ class Box2DManifold : public Object {
 
 friend class Box2DWorld;
 friend class Box2DCollisionObject;
+friend class Box2DContact;
 
 public:
 	enum Type {

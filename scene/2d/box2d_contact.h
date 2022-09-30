@@ -21,6 +21,8 @@ private:
 	b2Contact* _contact{nullptr};
 	Box2DManifold manifold{};
 
+	void _set_contact(b2Contact *contact);
+
 protected:
 	void _notification(int p_what);
 	static void _bind_methods();
@@ -28,7 +30,6 @@ protected:
 public:	
 
 	Box2DManifold* get_manifold();
-	//void get_world_manifold(b2WorldManifold* worldManifold) const; //TODO
 
 	bool is_touching();
 	void set_enabled(bool flag);

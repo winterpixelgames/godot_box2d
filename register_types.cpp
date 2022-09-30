@@ -34,7 +34,7 @@ void register_godot_box2d_types() {
 
 	ClassDB::register_class<Box2DFixture>();
 	ClassDB::register_class<Box2DContact>();
-	ClassDB::register_class<Box2DContactImmutable>();
+	//ClassDB::register_class<Box2DContactImmutable>();
 	ClassDB::register_class<Box2DManifold>();
 
 	ClassDB::register_virtual_class<Box2DShape>();
