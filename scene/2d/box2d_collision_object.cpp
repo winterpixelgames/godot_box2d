@@ -111,52 +111,56 @@ void Box2DCollisionObject::destroy_and_recreate() {
 }
 
 void Box2DCollisionObject::set_box2dworld_transform(const Transform2D &p_transform) {
-	// std::vector<Transform2D> transforms{};
-	// transforms.push_back(p_transform);
-	// Node *parent = get_parent();
-	// while (parent) {
-	// 	if (parent == world_node) {
-	// 		break;
-	// 	}
-	// 	CanvasItem *cv = Object::cast_to<CanvasItem>(parent);
-	// 	if (cv) {
-	// 		transforms.push_back(cv->get_transform().affine_inverse());
-	// 	}
-	// 	parent = parent->get_parent();
-	// }
-	//
-	// Transform2D target_xform{};
-	// while (transforms.size() > 0) {
-	// 	target_xform = target_xform * transforms.back();
-	// 	transforms.pop_back();
-	// }
-	// set_transform(target_xform);
-	set_transform(p_transform);
+	std::vector<Transform2D> transforms{};
+	transforms.push_back(p_transform);
+	Node *parent = get_parent();
+	while (parent) {
+		if (parent == world_node) {
+			break;
+		}
+		CanvasItem *cv = Object::cast_to<CanvasItem>(parent);
+		if (cv) {
+			transforms.push_back(cv->get_transform().affine_inverse());
+		} else {
+			break;
+		}
+		parent = parent->get_parent();
+	}
+	
+	Transform2D target_xform{};
+	while (transforms.size() > 0) {
+		target_xform = target_xform * transforms.back();
+		transforms.pop_back();
+	}
+	set_transform(target_xform);
+	//set_transform(p_transform);
 }
 
 Transform2D Box2DCollisionObject::get_box2dworld_transform() const {
-	// std::vector<Transform2D> transforms{};
-	// transforms.push_back(get_transform());
-	// Node *parent = get_parent();
-	// while (parent) {
-	// 	if (parent == world_node) {
-	// 		break;
-	// 	}
-	// 	CanvasItem *cv = Object::cast_to<CanvasItem>(parent);
-	// 	if (cv) {
-	// 		transforms.push_back(cv->get_transform());
-	// 	}
-	// 	parent = parent->get_parent();
-	// }
-	//
-	// Transform2D returned{};
-	// while (transforms.size() > 0) {
-	// 	returned = returned * transforms.back();
-	// 	transforms.pop_back();
-	// }
-	//
-	// return returned;
-	return get_transform();
+	std::vector<Transform2D> transforms{};
+	transforms.push_back(get_transform());
+	Node *parent = get_parent();
+	while (parent) {
+		if (parent == world_node) {
+			break;
+		}
+		CanvasItem *cv = Object::cast_to<CanvasItem>(parent);
+		if (cv) {
+			transforms.push_back(cv->get_transform());
+		} else {
+			break;
+		}
+		parent = parent->get_parent();
+	}
+	
+	Transform2D returned{};
+	while (transforms.size() > 0) {
+		returned = returned * transforms.back();
+		transforms.pop_back();
+	}
+	
+	return returned;
+	//return get_transform();
 }
 
 void Box2DCollisionObject::_set_contact_monitor(bool p_enabled) {
