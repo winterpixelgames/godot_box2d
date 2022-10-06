@@ -331,7 +331,9 @@ void Box2DWorld::PostSolve(b2Contact *contact, const b2ContactImpulse *impulse) 
 	if (get_script_instance() && get_script_instance()->has_method(STRINGNAME_post_solve)) {
 		Box2DContact c;
 		c._set_contact(contact);
-		call(STRINGNAME_post_solve, &c);
+		Box2DContactImpulse im;
+		im._set_values(impulse);
+		call(STRINGNAME_post_solve, &c, &im);
 	}
 }
 
@@ -455,10 +457,10 @@ void Box2DWorld::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("presolve_contact", PropertyInfo(Variant::DICTIONARY, "contact_info")));
 	ADD_SIGNAL(MethodInfo("postsolve_contact", PropertyInfo(Variant::DICTIONARY, "contact_info")));
 
-	BIND_VMETHOD(MethodInfo(BOX2D_VMETHOD_PRE_SOLVE, PropertyInfo(Variant::OBJECT, "contact", PROPERTY_HINT_RESOURCE_TYPE, "Box2DContact") ,PropertyInfo(Variant::OBJECT, "old_manifold", PROPERTY_HINT_RESOURCE_TYPE, "Box2DManifold")));	
 	BIND_VMETHOD(MethodInfo(BOX2D_VMETHOD_BEGIN_CONTACT, PropertyInfo(Variant::OBJECT, "contact", PROPERTY_HINT_RESOURCE_TYPE, "Box2DContact")));	
+	BIND_VMETHOD(MethodInfo(BOX2D_VMETHOD_PRE_SOLVE, PropertyInfo(Variant::OBJECT, "contact", PROPERTY_HINT_RESOURCE_TYPE, "Box2DContact"), PropertyInfo(Variant::OBJECT, "old_manifold", PROPERTY_HINT_RESOURCE_TYPE, "Box2DManifold")));	
+	BIND_VMETHOD(MethodInfo(BOX2D_VMETHOD_POST_SOLVE, PropertyInfo(Variant::OBJECT, "contact", PROPERTY_HINT_RESOURCE_TYPE, "Box2DContact"), PropertyInfo(Variant::OBJECT, "impulse", PROPERTY_HINT_RESOURCE_TYPE, "Box2DContactImpulse")));
 	BIND_VMETHOD(MethodInfo(BOX2D_VMETHOD_END_CONTACT, PropertyInfo(Variant::OBJECT, "contact", PROPERTY_HINT_RESOURCE_TYPE, "Box2DContact")));	
-	BIND_VMETHOD(MethodInfo(BOX2D_VMETHOD_POST_SOLVE, PropertyInfo(Variant::OBJECT, "contact", PROPERTY_HINT_RESOURCE_TYPE, "Box2DContact")));
 }
 
 inline void _get_aabb_from_shapes(const Vector<const b2Shape *> &p_b2shapes, const b2Transform &p_xform, b2AABB &r_aabb) {

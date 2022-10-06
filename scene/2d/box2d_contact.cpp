@@ -116,3 +116,36 @@ void Box2DContact::set_tangent_speed(float speed) {
 float Box2DContact::get_tangent_speed() {
 	return _contact->GetTangentSpeed();
 }
+
+void Box2DContactImpulse::_set_values(const b2ContactImpulse *contact) {
+	impulse = *contact;
+}
+
+void Box2DContactImpulse::_notification(int p_what) {
+}
+
+void Box2DContactImpulse::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("get_count"), &Box2DContactImpulse::get_count);
+	ClassDB::bind_method(D_METHOD("get_normal_impulse", "index"), &Box2DContactImpulse::get_normal_impulse);
+	ClassDB::bind_method(D_METHOD("get_tangent_impulse", "index"), &Box2DContactImpulse::get_tangent_impulse);
+}
+
+int Box2DContactImpulse::get_count() const {
+	return impulse.count;
+}
+
+float Box2DContactImpulse::get_normal_impulse(const int p_index) const {
+	ERR_FAIL_COND_V(p_index < 0 || p_index > impulse.count, 0.0);
+	return B2_TO_GD * (impulse.normalImpulses[p_index]);
+}
+
+float Box2DContactImpulse::get_tangent_impulse(const int p_index) const {
+	ERR_FAIL_COND_V(p_index < 0 || p_index > impulse.count, 0.0);
+	return B2_TO_GD * (impulse.tangentImpulses[p_index]);
+}
+
+Box2DContactImpulse::Box2DContactImpulse() {
+}
+
+Box2DContactImpulse::~Box2DContactImpulse() {
+}

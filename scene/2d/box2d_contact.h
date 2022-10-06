@@ -62,4 +62,27 @@ public:
 	~Box2DContact();
 };
 
+class Box2DContactImpulse : public Object {
+	GDCLASS(Box2DContactImpulse, Object);
+
+friend class Box2DWorld;
+
+private:
+	b2ContactImpulse impulse{};
+
+	void _set_values(const b2ContactImpulse *contact);
+
+protected:
+	void _notification(int p_what);
+	static void _bind_methods();
+
+public:	
+	int get_count() const;
+	float get_normal_impulse(const int p_index) const;
+	float get_tangent_impulse(const int p_index) const;
+
+	Box2DContactImpulse();
+	~Box2DContactImpulse();
+};
+
 #endif // BOX2D_CONTACT_H
