@@ -369,7 +369,7 @@ void Box2DPhysicsBody::_notification(int p_what) {
 
 			} else { // type = KINEMATIC
 				next_xform = new_xform;
-				if (sync_to_physics) {
+				if (sync_to_physics && !Engine::get_singleton()->is_editor_hint()) {
 					// undo node transform, will be updated on physics state sync
 					set_block_transform_notify(true);
 					set_box2dworld_transform(prev_xform);
