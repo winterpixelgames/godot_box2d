@@ -19,6 +19,33 @@ void Box2DFixture::on_parent_created(Node *) {
 	WARN_PRINT("FIXTURE CREATED IN CALLBACK");
 }
 
+Transform2D get_box2dworld_transform(const Box2DFixture *fixture) {
+	std::vector<Transform2D> transforms{};
+	transforms.push_back(fixture->get_transform());
+	Node *parent = fixture->get_parent();
+	while (parent) {
+		if (parent == fixture->_get_owner_node()) {
+			break;
+		}
+		CanvasItem *cv = Object::cast_to<CanvasItem>(parent);
+		if (cv) {
+			transforms.push_back(cv->get_transform());
+		} else {
+			break;
+		}
+		parent = parent->get_parent();
+	}
+	
+	Transform2D returned{};
+	while (transforms.size() > 0) {
+		returned = returned * transforms.back();
+		transforms.pop_back();
+	}
+	
+	return returned;
+	//return get_transform();
+}
+
 void Box2DFixture::create_b2Fixture(b2Fixture *&p_fixture_out, const b2FixtureDef &p_def, const Transform2D &p_shape_xform) {
 	b2FixtureDef finalDef = b2FixtureDef(p_def);
 
@@ -102,7 +129,7 @@ bool Box2DFixture::create_b2() {
 			for (int i = 0; i < shape_vector.size(); i++) {
 				fixtureDef.shape = shape_vector[i];
 				b2Fixture *fixture = NULL;
-				create_b2Fixture(fixture, fixtureDef, get_transform());
+				create_b2Fixture(fixture, fixtureDef, get_box2dworld_transform(this));
 				if (fixture) {
 					fixtures.push_back(fixture);
 				}
@@ -112,7 +139,7 @@ bool Box2DFixture::create_b2() {
 
 			fixtureDef.shape = shape->get_shape();
 			b2Fixture *fixture = NULL;
-			create_b2Fixture(fixture, fixtureDef, get_transform());
+			create_b2Fixture(fixture, fixtureDef, get_box2dworld_transform(this));
 			if (fixture) {
 				fixtures.push_back(fixture);
 			}
@@ -564,7 +591,7 @@ void Box2DFixture::reset_fixture() {
 		for (int i = 0; i < shape_vector.size(); i++) {
 			fixtureDef.shape = shape_vector[i];
 			b2Fixture *fixture = NULL;
-			create_b2Fixture(fixture, fixtureDef, get_transform());
+			create_b2Fixture(fixture, fixtureDef, get_box2dworld_transform(this));
 			if (fixture) {
 					fixtures.push_back(fixture);
 			}
@@ -574,7 +601,7 @@ void Box2DFixture::reset_fixture() {
 
 		fixtureDef.shape = shape->get_shape();
 		b2Fixture *fixture = NULL;
-		create_b2Fixture(fixture, fixtureDef, get_transform());
+		create_b2Fixture(fixture, fixtureDef, get_box2dworld_transform(this));
 		if (fixture) {
 				fixtures.push_back(fixture);
 		}
