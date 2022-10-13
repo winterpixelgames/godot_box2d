@@ -484,8 +484,19 @@ void Box2DPolygonShape::build_polygon() {
 			const int n = ordered_points.size();
 			b2Vec2 *b2Vertices = static_cast<b2Vec2 *>(memalloc(n * sizeof(b2Vec2)));
 
+			// make sure points are sufficiently far apart to avoid b2Assert
+			int n_used = 0;
 			for (int i = 0; i < n; i++) {
-				b2Vertices[i] = gd_to_b2(ordered_points[i]);
+				b2Vec2 v = gd_to_b2(ordered_points[i]);
+				if (i == 0 || b2DistanceSquared(v, b2Vertices[n_used-1]) > b2_linearSlop * b2_linearSlop) {
+					b2Vertices[n_used] = v;
+					++n_used;
+				}
+			}
+			if (n_used < 3) {
+				_err_print_error(FUNCTION_STR, __FILE__, __LINE__, "Condition \"" _STR(n_used < 3) "\" is true.", "Segment polygon must have at least 3 points with enough distance between them. You might have overlapping points.");
+				memfree(b2Vertices);
+				return;
 			}
 
 			chain_shape = memnew(b2ChainShape);
