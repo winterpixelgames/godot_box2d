@@ -137,30 +137,7 @@ void Box2DCollisionObject::set_box2dworld_transform(const Transform2D &p_transfo
 }
 
 Transform2D Box2DCollisionObject::get_box2dworld_transform() const {
-	std::vector<Transform2D> transforms{};
-	transforms.push_back(get_transform());
-	Node *parent = get_parent();
-	while (parent) {
-		if (parent == world_node) {
-			break;
-		}
-		CanvasItem *cv = Object::cast_to<CanvasItem>(parent);
-		if (cv) {
-			transforms.push_back(cv->get_transform());
-		} else {
-			break;
-		}
-		parent = parent->get_parent();
-	}
-	
-	Transform2D returned{};
-	while (transforms.size() > 0) {
-		returned = returned * transforms.back();
-		transforms.pop_back();
-	}
-	
-	return returned;
-	//return get_transform();
+	return world_node->get_global_transform().affine_inverse() * get_global_transform();
 }
 
 void Box2DCollisionObject::_set_contact_monitor(bool p_enabled) {
