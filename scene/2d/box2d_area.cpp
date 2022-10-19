@@ -86,7 +86,7 @@ void Box2DArea::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			last_step_xform = get_box2dworld_transform();
-		}
+		} break;
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			// Send new transform to physics
