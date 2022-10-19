@@ -21,9 +21,9 @@ void Box2DFixture::on_parent_created(Node *) {
 
 Transform2D get_box2dworld_transform(const Box2DFixture *fixture) {
 	if (fixture->_get_owner_node()) {
-		return fixture->_get_owner_node()->get_global_transform().affine_inverse();
+		return fixture->_get_owner_node()->get_global_transform().affine_inverse() * fixture->get_global_transform();
 	}
-	return fixture->_get_owner_node()->get_global_transform().affine_inverse();
+	return fixture->get_global_transform();
 }
 
 void Box2DFixture::create_b2Fixture(b2Fixture *&p_fixture_out, const b2FixtureDef &p_def, const Transform2D &p_shape_xform) {
