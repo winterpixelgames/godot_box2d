@@ -137,7 +137,10 @@ void Box2DCollisionObject::set_box2dworld_transform(const Transform2D &p_transfo
 }
 
 Transform2D Box2DCollisionObject::get_box2dworld_transform() const {
-	return world_node->get_global_transform().affine_inverse() * get_global_transform();
+	if (world_node) {
+		return world_node->get_global_transform().affine_inverse() * get_global_transform();
+	}
+	return get_global_transform();
 }
 
 void Box2DCollisionObject::_set_contact_monitor(bool p_enabled) {
