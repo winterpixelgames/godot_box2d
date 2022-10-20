@@ -340,7 +340,7 @@ void Box2DPhysicsBody::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
 			prev_xform = get_box2dworld_transform();
-			next_xform = get_box2dworld_transform();
+			next_xform = prev_xform;
 
 			// Reset move_and_slide data
 			on_floor = false;
@@ -360,6 +360,7 @@ void Box2DPhysicsBody::_notification(int p_what) {
 			set_process_internal(false);
 		} break;
 
+		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED:
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			Mode type = get_type();
 			Transform2D new_xform = get_box2dworld_transform();
@@ -1176,6 +1177,8 @@ bool Box2DPhysicsBody::is_sync_to_physics_enabled() const {
 
 Box2DPhysicsBody::Box2DPhysicsBody() {
 	set_physics_process_internal(true);
+	set_notify_transform(true);
+	set_notify_local_transform(true);
 }
 
 Box2DPhysicsBody::~Box2DPhysicsBody() {

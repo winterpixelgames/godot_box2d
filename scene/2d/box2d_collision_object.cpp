@@ -112,7 +112,7 @@ void Box2DCollisionObject::destroy_and_recreate() {
 
 void Box2DCollisionObject::set_box2dworld_transform(const Transform2D &p_transform) {
 	if (world_node) {
-		set_global_transform(p_transform * world_node->get_global_transform());
+		set_global_transform(p_transform);
 	}
 	set_global_transform(p_transform);
 
@@ -143,7 +143,7 @@ void Box2DCollisionObject::set_box2dworld_transform(const Transform2D &p_transfo
 
 Transform2D Box2DCollisionObject::get_box2dworld_transform() const {
 	if (world_node) {
-		return world_node->get_global_transform().affine_inverse() * get_global_transform();
+		return get_global_transform();
 	}
 	return get_global_transform();
 }
@@ -415,7 +415,6 @@ Box2DCollisionObject::Box2DCollisionObject() {
 	filterDef.maskBits = 0x0001;
 
 	set_physics_process_internal(true);
-	set_notify_transform(true);
 }
 
 Box2DCollisionObject::~Box2DCollisionObject() {

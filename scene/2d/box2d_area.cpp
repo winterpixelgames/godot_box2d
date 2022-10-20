@@ -88,6 +88,7 @@ void Box2DArea::_notification(int p_what) {
 			last_step_xform = get_box2dworld_transform();
 		} break;
 
+		case NOTIFICATION_LOCAL_TRANSFORM_CHANGED:
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 			// Send new transform to physics
 			Transform2D new_xform = get_box2dworld_transform();
@@ -390,6 +391,7 @@ Box2DArea::Box2DArea() {
 	bodyDef.gravityScale = 0.0f;
 
 	set_monitoring(true);
+	set_notify_transform(true);
 }
 
 Box2DArea::~Box2DArea() {
