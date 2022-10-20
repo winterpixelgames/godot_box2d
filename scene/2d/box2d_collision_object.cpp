@@ -111,7 +111,12 @@ void Box2DCollisionObject::destroy_and_recreate() {
 }
 
 void Box2DCollisionObject::set_box2dworld_transform(const Transform2D &p_transform) {
-	std::vector<Transform2D> transforms{};
+	if (world_node) {
+		set_global_transform(p_transform * world_node->get_global_transform());
+	}
+	set_global_transform(p_transform);
+
+	/*std::vector<Transform2D> transforms{};
 	transforms.push_back(p_transform);
 	Node *parent = get_parent();
 	while (parent) {
@@ -132,7 +137,7 @@ void Box2DCollisionObject::set_box2dworld_transform(const Transform2D &p_transfo
 		target_xform = target_xform * transforms.back();
 		transforms.pop_back();
 	}
-	set_transform(target_xform);
+	set_transform(target_xform);*/
 	//set_transform(p_transform);
 }
 

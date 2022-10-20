@@ -83,7 +83,7 @@ private:
 	Transform2D prev_xform; // For calculating kinematic body movement velocity
 	Transform2D next_xform;
 	bool integrate_position = false; // Default false is Godot behavior, true is Box2D behavior
-	bool sync_to_physics = false;
+	bool sync_to_physics = false; // if enabled, any manual changes to transform are only applied on the physics step. useful for visual synchronization.
 
 	Ref<Box2DKinematicCollision> motion_cache;
 
