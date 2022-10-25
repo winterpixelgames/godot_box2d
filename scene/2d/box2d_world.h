@@ -71,8 +71,9 @@ struct ContactBufferManifold {
 
 	inline void set(Box2DContactPoint &p_point, int p_idx) {
 		ERR_FAIL_COND(p_idx < 0 || p_idx >= b2_maxManifoldPoints);
-		if (points[p_idx].id != -1)
+		if (points[p_idx].id != -1) {
 			ERR_FAIL_COND(points[p_idx].id != -1);
+		}
 		points[p_idx] = p_point;
 	}
 
