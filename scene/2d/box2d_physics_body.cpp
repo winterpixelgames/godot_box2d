@@ -117,8 +117,6 @@ void Box2DPhysicsBody::pre_step(float p_delta) {
 		}
 		prev_xform = next_xform;
 	}
-
-	_update_area_effects();
 }
 
 void Box2DPhysicsBody::step(float p_delta) {
@@ -242,7 +240,6 @@ void Box2DPhysicsBody::_update_area_effects() {
 	}
 
 	gravity *= get_gravity_scale() * body->GetMass();
-
 	const bool wake = gravity != last_area_gravity;
 	body->ApplyForceToCenter(gravity, wake);
 	if (linear_damp >= 0) {

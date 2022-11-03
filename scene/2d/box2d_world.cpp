@@ -446,8 +446,7 @@ void Box2DWorld::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("body_test_motion", "body", "from", "motion", "infinite_inertia", "result"), &Box2DWorld::_body_test_motion_binding, DEFVAL(Variant()));
 
 	ClassDB::bind_method(D_METHOD("step", "delta", "velocity_iterations", "position_iterations"), &Box2DWorld::step, DEFVAL(8), DEFVAL(8));
-
-	//ClassDB::bind_method(D_METHOD("disconnect_peer", "id", "now"), &NetworkedMultiplayerENet::disconnect_peer, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("pre_step", "delta"), &Box2DWorld::pre_step);
 	ClassDB::bind_method(D_METHOD("find_new_contacts"), &Box2DWorld::FindNewContacts);
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "gravity"), "set_gravity", "get_gravity");
@@ -847,6 +846,13 @@ b2Vec2 Box2DWorld::_solve_position(const Vector<const b2Shape *> &p_body_shapes,
 	return correction;
 }
 
+void Box2DWorld::pre_step(float p_step) {
+	// Handle pre-step logic
+	for (Set<Box2DCollisionObject *>::Element *obj = body_owners.front(); obj; obj = obj->next()) {
+		obj->get()->pre_step(p_step);
+	}
+}
+
 void Box2DWorld::step(float p_step, int32 velocity_iterations, int32 position_iterations) {
 	// Reset contact "solves" counter to 0
 	// const uint64_t *k = NULL;
@@ -859,12 +865,10 @@ void Box2DWorld::step(float p_step, int32 velocity_iterations, int32 position_it
 	// 	}
 	// }
 
-	// Handle pre-step logic
-	for (Set<Box2DCollisionObject *>::Element *obj = body_owners.front(); obj; obj = obj->next()) {
-		obj->get()->pre_step(p_step);
-	}
-
 	// Step world
+	for (Set<Box2DCollisionObject *>::Element *obj = body_owners.front(); obj; obj = obj->next()) {
+		obj->get()->_update_area_effects();
+	}
 	world->Step(p_step, velocity_iterations, position_iterations);
 	flag_rescan_contacts_monitored = false;
 
