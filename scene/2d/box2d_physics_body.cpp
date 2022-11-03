@@ -112,7 +112,7 @@ void Box2DPhysicsBody::pre_step(float p_delta) {
 		if (!integrate_position) {
 			Transform2D motion = prev_xform.affine_inverse() * next_xform;
 			// TODO there is a bug here. See this issue: https://github.com/godotengine/godot/issues/34869
-			_set_linear_velocity_no_check(motion.get_origin() / p_delta);
+			_set_linear_velocity_no_check(motion.get_origin().rotated(prev_xform.get_rotation()) / p_delta);
 			_set_angular_velocity_no_check(motion.get_rotation() / p_delta);
 		}
 		prev_xform = next_xform;
