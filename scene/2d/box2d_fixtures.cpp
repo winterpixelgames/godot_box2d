@@ -41,6 +41,9 @@ void Box2DFixture::create_b2Fixture(b2Fixture *&p_fixture_out, const b2FixtureDe
 		case b2Shape::Type::e_circle: {
 			b2CircleShape shp = b2CircleShape(*static_cast<const b2CircleShape *>(p_def.shape));
 			shp.m_p = gd_to_b2(p_shape_xform.xform(b2_to_gd(shp.m_p)));
+			Vector2 scale = p_shape_xform.get_scale();
+			float min_scale = MIN(scale.x, scale.y);
+			shp.m_radius = min_scale * shp.m_radius;
 			finalDef.shape = &shp;
 			p_fixture_out = owner_node->body->CreateFixture(&finalDef); // Write here because shp is in scope
 		} break;
