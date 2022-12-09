@@ -280,6 +280,8 @@ void Box2DFixture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_shape"), &Box2DFixture::get_shape);
 	ClassDB::bind_method(D_METHOD("set_sensor", "sensor"), &Box2DFixture::set_sensor);
 	ClassDB::bind_method(D_METHOD("is_sensor"), &Box2DFixture::is_sensor);
+	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &Box2DFixture::set_enabled);
+	ClassDB::bind_method(D_METHOD("is_enabled"), &Box2DFixture::is_enabled);
 	ClassDB::bind_method(D_METHOD("set_override_body_collision", "override_body_collision"), &Box2DFixture::set_override_body_collision);
 	ClassDB::bind_method(D_METHOD("get_override_body_collision"), &Box2DFixture::get_override_body_collision);
 	ClassDB::bind_method(D_METHOD("set_collision_layer", "collision_layer"), &Box2DFixture::set_collision_layer);
@@ -312,6 +314,7 @@ void Box2DFixture::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "density"), "set_density", "get_density");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "friction"), "set_friction", "get_friction");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "restitution"), "set_restitution", "get_restitution");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
 	ADD_GROUP("Collision", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "override_body_collision"), "set_override_body_collision", "get_override_body_collision");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_layer", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_collision_layer", "get_collision_layer");
@@ -344,12 +347,17 @@ void Box2DFixture::update_filterdata() {
 	}
 
 	b2Filter filter;
-	if (override_body_filterdata) {
+	if (!enabled) {
+		filter.categoryBits = 0;
+		filter.maskBits = 0;
+		filter.groupIndex = 0;
+	} else if (override_body_filterdata) {
 		filter = filterDef;
 	} else {
 		ERR_FAIL_COND(!owner_node);
 		filter = owner_node->filterDef;
 	}
+
 	for (int i = 0; i < fixtures.size(); i++) {
 		fixtures[i]->SetFilterData(filter);
 	}
@@ -450,6 +458,18 @@ void Box2DFixture::set_sensor(bool p_sensor) {
 
 bool Box2DFixture::is_sensor() const {
 	return fixtureDef.isSensor;
+}
+
+void Box2DFixture::set_enabled(bool p_enabled) {
+	if (enabled == p_enabled) {
+		return;
+	}
+	enabled = p_enabled;
+	update_filterdata();
+}
+
+bool Box2DFixture::is_enabled() const {
+	return enabled;
 }
 
 void Box2DFixture::set_override_body_collision(bool p_override) {

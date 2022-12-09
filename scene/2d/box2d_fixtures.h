@@ -29,6 +29,7 @@ class Box2DFixture : public Node2D {
 
 	Ref<Box2DShape> shape;
 	b2FixtureDef fixtureDef;
+	bool enabled{true};
 	b2Filter filterDef;
 	bool override_body_filterdata = false;
 	bool accept_body_collision_exceptions = true;
@@ -81,6 +82,9 @@ public:
 
 	void set_sensor(bool p_sensor);
 	bool is_sensor() const;
+
+	void set_enabled(bool p_enabled);
+	bool is_enabled() const;
 
 	void set_override_body_collision(bool p_override);
 	bool get_override_body_collision() const;
