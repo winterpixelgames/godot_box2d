@@ -159,6 +159,7 @@ public:
 	real_t get_mass() const;
 	real_t get_inertia() const;
 	Vector2 get_center_of_mass() const;
+	Vector2 get_global_center_of_mass() const;
 
 	void set_linear_damping(real_t p_damping);
 	real_t get_linear_damping() const;

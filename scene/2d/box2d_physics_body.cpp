@@ -440,6 +440,7 @@ void Box2DPhysicsBody::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_mass"), &Box2DPhysicsBody::get_mass);
 	ClassDB::bind_method(D_METHOD("get_inertia"), &Box2DPhysicsBody::get_inertia);
 	ClassDB::bind_method(D_METHOD("get_center_of_mass"), &Box2DPhysicsBody::get_center_of_mass);
+	ClassDB::bind_method(D_METHOD("get_global_center_of_mass"), &Box2DPhysicsBody::get_global_center_of_mass);
 	ClassDB::bind_method(D_METHOD("set_linear_damping", "linear_damping"), &Box2DPhysicsBody::set_linear_damping);
 	ClassDB::bind_method(D_METHOD("get_linear_damping"), &Box2DPhysicsBody::get_linear_damping);
 	ClassDB::bind_method(D_METHOD("set_angular_damping", "angular_damping"), &Box2DPhysicsBody::set_angular_damping);
@@ -704,6 +705,15 @@ Vector2 Box2DPhysicsBody::get_center_of_mass() const {
 	}
 	
 	return Vector2(0,0);
+}
+
+Vector2 Box2DPhysicsBody::get_global_center_of_mass() const {
+	if (!_get_b2Body()) {
+		return Vector2(0, 0);
+	}
+	
+	const Vector2 local = b2_to_gd(_get_b2Body()->GetLocalCenter());
+	return get_box2dworld_transform().xform(local);
 }
 
 void Box2DPhysicsBody::set_linear_damping(real_t p_damping) {
