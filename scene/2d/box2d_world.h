@@ -465,6 +465,7 @@ public:
 	// TODO raycasting should offer an API congruent to intersect_shape
 
 	int intersect_point_fast(Array p_out_array, const Vector2 &p_point, int p_max_results = 32, const Array &p_exclude = Array(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_sensors = false, uint32_t p_collision_layer = 0x0, int32_t p_group_index = 0);
+	bool intersect_ray_fast(Dictionary p_out_array, const Vector2 &p_from, const Vector2 &p_to, const Array &p_exclude = Array(), uint32_t p_collision_mask = 0xFFFFFFFF, bool p_collide_with_bodies = true, bool p_collide_with_sensors = false, uint32_t p_collision_layer = 0x0, int32_t p_group_index = 0);
 	int intersect_shape_fast(Array p_out_array, const Ref<Box2DShapeQueryParameters> &p_query, int p_max_results = 32);
 
 	// This is by-default continuous collision. Is this slow? TODO test or remove commented code

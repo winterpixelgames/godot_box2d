@@ -436,6 +436,7 @@ void Box2DWorld::_bind_methods() {
 	//ClassDB::bind_method(D_METHOD("collide_shape", "shape", "max_results"), &PhysicsDirectSpaceState2D::_collide_shape, DEFVAL(32));
 
 	ClassDB::bind_method(D_METHOD("intersect_point_fast", "output", "point", "max_results", "exclude", "collision_mask", "collide_with_bodies", "collide_with_sensors", "collision_layer", "group"), &Box2DWorld::intersect_point_fast, DEFVAL(32), DEFVAL(Array()), DEFVAL(0xFFFFFFFF), DEFVAL(true), DEFVAL(false), DEFVAL(0x0), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("intersect_ray_fast", "output", "from", "to", "exclude", "collision_mask", "collide_with_bodies", "collide_with_sensors", "collision_layer", "group"), &Box2DWorld::intersect_ray_fast, DEFVAL(Array()), DEFVAL(0xFFFFFFFF), DEFVAL(true), DEFVAL(false), DEFVAL(0x0), DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("intersect_shape_fast", "output", "query", "max_results"), &Box2DWorld::intersect_shape_fast, DEFVAL(32));
 
 	ClassDB::bind_method(D_METHOD("query_aabb", "aabb", "target", "method"), &Box2DWorld::query_aabb);
@@ -1146,6 +1147,37 @@ int Box2DWorld::intersect_point_fast(Array p_out_array, const Vector2 &p_point, 
 	}
 
 	return i;
+}
+
+bool Box2DWorld::intersect_ray_fast(Dictionary p_out_dict, const Vector2 &p_from, const Vector2 &p_to, const Array &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_sensors, uint32_t p_collision_layer, int32_t p_group_index) {
+	ERR_FAIL_COND_V_MSG(!((p_to - p_from).length_squared() > 0.0f), false, "Raycast queries must have valid vector inputs.");
+
+	ray_callback.result.fixture = NULL;
+
+	ray_callback.exclude.clear();
+	for (int i = 0; i < p_exclude.size(); i++) {
+		Object *obj = ObjectDB::get_instance(ObjectID(p_exclude[i]));
+		Box2DPhysicsBody *node = Object::cast_to<Box2DPhysicsBody>(obj);
+		if (node)
+			ray_callback.exclude.insert(node);
+	}
+
+	ray_callback.filter.maskBits = p_collision_mask;
+	ray_callback.filter.categoryBits = p_collision_layer;
+	ray_callback.filter.groupIndex = p_group_index;
+	ray_callback.collide_with_bodies = p_collide_with_bodies;
+	ray_callback.collide_with_sensors = p_collide_with_sensors;
+
+	world->RayCast(&ray_callback, gd_to_b2(p_from), gd_to_b2(p_to));
+
+	p_out_dict.clear();
+	if (ray_callback.result.fixture != NULL) {
+		p_out_dict["fixture"] = ray_callback.result.fixture->GetUserData().owner;
+		p_out_dict["position"] = b2_to_gd(ray_callback.result.point);
+		p_out_dict["normal"] = b2_to_gd(ray_callback.result.normal);
+		return true;
+	}
+	return false;
 }
 
 int Box2DWorld::intersect_shape_fast(Array p_out_array, const Ref<Box2DShapeQueryParameters> &p_query, int p_max_results) {
