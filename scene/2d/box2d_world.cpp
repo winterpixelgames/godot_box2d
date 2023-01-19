@@ -1074,7 +1074,7 @@ inline bool _query_should_ignore_fixture(b2Fixture *p_fixture, const bool p_coll
 		filtered = p_filter.groupIndex < 0;
 	}
 
-	filtered |= (filterB.categoryBits & p_filter.maskBits) == 0 && (p_filter.categoryBits & filterB.maskBits) == 0;
+	filtered |= (filterB.categoryBits & p_filter.maskBits) == 0 || (p_filter.categoryBits & filterB.maskBits) == 0;
 
 	if (filtered) {
 		return true;
