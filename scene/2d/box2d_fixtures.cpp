@@ -21,7 +21,19 @@ void Box2DFixture::on_parent_created(Node *) {
 
 Transform2D get_box2dworld_transform(const Box2DFixture *fixture) {
 	if (fixture->_get_owner_node()) {
-		return fixture->_get_owner_node()->get_global_transform().affine_inverse() * fixture->get_global_transform();
+		Transform2D fixture_global_transform = fixture->get_global_transform();
+		Transform2D parent_global_transform = fixture->_get_owner_node()->get_global_transform();
+		Transform2D relative_transform = parent_global_transform.affine_inverse() * fixture_global_transform;
+		// Scale isnt applied at the body level
+		// We want the relative position and rotation and the global scale
+		relative_transform.set_scale(fixture_global_transform.get_scale());
+
+		//THIS IS SUPER HACKY, wish godot 3.2 had callables
+		const Box2DCircleShape* circle_shape = Object::cast_to<Box2DCircleShape>(fixture);
+		if (circle_shape == nullptr) {
+			print_line("[fixture] get_box2dworld_transform() fixture_global_transform scale " + String(fixture_global_transform.get_scale()) + " parent_global_transform scale " + String(parent_global_transform.get_scale()));
+		}
+		return relative_transform;
 	}
 	return fixture->get_global_transform();
 }
@@ -228,6 +240,11 @@ void Box2DFixture::_notification(int p_what) {
 			update_shape();
 		} break;
 
+		case NOTIFICATION_TRANSFORM_CHANGED: {
+			// work around to clear the notification
+			get_global_transform();
+			update_shape();
+		} break;
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			// Do nothing
 		} break;
@@ -629,6 +646,7 @@ Box2DFixture::Box2DFixture() {
 	}
 
 	set_notify_local_transform(true);
+	set_notify_transform(true);
 };
 
 Box2DFixture::~Box2DFixture() {
