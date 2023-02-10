@@ -27,12 +27,7 @@ Transform2D get_box2dworld_transform(const Box2DFixture *fixture) {
 		// Scale isnt applied at the body level
 		// We want the relative position and rotation and the global scale
 		relative_transform.set_scale(fixture_global_transform.get_scale());
-
-		//THIS IS SUPER HACKY, wish godot 3.2 had callables
-		const Box2DCircleShape* circle_shape = Object::cast_to<Box2DCircleShape>(fixture);
-		if (circle_shape == nullptr) {
-			print_line("[fixture] get_box2dworld_transform() fixture_global_transform scale " + String(fixture_global_transform.get_scale()) + " parent_global_transform scale " + String(parent_global_transform.get_scale()));
-		}
+		
 		return relative_transform;
 	}
 	return fixture->get_global_transform();
