@@ -297,112 +297,6 @@ Box2DSegmentShape::Box2DSegmentShape() {
 	shape.m_vertex3 = gd_to_b2(Vector2(20, 0));
 }
 
-bool isPolygonValid(const b2Vec2 *vertices, int32 count) {
-	// This function is copied from b2PolygonShape::Set
-	// See why this is needed: https://github.com/erincatto/box2d/issues/671
-	// All b2Assert calls are replaced with return statements, and irrelevant computations are removed.
-
-	if (3 > count || count > b2_maxPolygonVertices) {
-		return false;
-	}
-
-	int32 n = b2Min(count, b2_maxPolygonVertices);
-
-	// Perform welding and copy vertices into local buffer.
-	b2Vec2 ps[b2_maxPolygonVertices];
-	int32 tempCount = 0;
-	for (int32 i = 0; i < n; ++i) {
-		b2Vec2 v = vertices[i];
-
-		bool unique = true;
-		for (int32 j = 0; j < tempCount; ++j) {
-			if (b2DistanceSquared(v, ps[j]) < ((0.5f * b2_linearSlop) * (0.5f * b2_linearSlop))) {
-				unique = false;
-				break;
-			}
-		}
-
-		if (unique) {
-			ps[tempCount++] = v;
-		}
-	}
-
-	n = tempCount;
-	if (n < 3) {
-		// Polygon is degenerate.
-		return false;
-	}
-
-	// Create the convex hull using the Gift wrapping algorithm
-	// http://en.wikipedia.org/wiki/Gift_wrapping_algorithm
-
-	// Find the right most point on the hull
-	int32 i0 = 0;
-	float x0 = ps[0].x;
-	for (int32 i = 1; i < n; ++i) {
-		float x = ps[i].x;
-		if (x > x0 || (x == x0 && ps[i].y < ps[i0].y)) {
-			i0 = i;
-			x0 = x;
-		}
-	}
-
-	int32 hull[b2_maxPolygonVertices];
-	int32 m = 0;
-	int32 ih = i0;
-
-	for (;;) {
-		if (m >= b2_maxPolygonVertices) {
-			return false;
-		}
-		hull[m] = ih;
-
-		int32 ie = 0;
-		for (int32 j = 1; j < n; ++j) {
-			if (ie == ih) {
-				ie = j;
-				continue;
-			}
-
-			b2Vec2 r = ps[ie] - ps[hull[m]];
-			b2Vec2 v = ps[j] - ps[hull[m]];
-			float c = b2Cross(r, v);
-			if (c < 0.0f) {
-				ie = j;
-			}
-
-			// Collinearity check
-			if (c == 0.0f && v.LengthSquared() > r.LengthSquared()) {
-				ie = j;
-			}
-		}
-
-		++m;
-		ih = ie;
-
-		if (ie == i0) {
-			break;
-		}
-	}
-
-	if (m < 3) {
-		// Polygon is degenerate.
-		return false;
-	}
-
-	// Compute normals. Ensure the edges have non-zero length.
-	for (int32 i = 0; i < m; ++i) {
-		int32 i1 = i;
-		int32 i2 = i + 1 < m ? i + 1 : 0;
-		b2Vec2 edge = ps[hull[i2]] - ps[hull[i1]];
-		if (edge.LengthSquared() <= b2_epsilon * b2_epsilon) {
-			return false;
-		}
-	}
-
-	return true;
-}
-
 void Box2DPolygonShape::build_polygon() {
 	// Remove previous b2Shapes
 	polygon_shape_vector.clear();
@@ -456,8 +350,26 @@ void Box2DPolygonShape::build_polygon() {
 						b2_pts[k] = gd_to_b2(smallpoly[k]);
 					}
 
-					if (likely(isPolygonValid(b2_pts, count))) {
-						shape.Set(b2_pts, count);
+					// compute area
+					float area = 0.0f;
+					const b2Vec2 &s = b2_pts[0];
+					for (int k = 0; k < count; k++) {
+						const b2Vec2 &p1 = b2_pts[k] - s;
+						const b2Vec2 &p2 = b2_pts[(k + 1) % count] - s;
+						area += 0.5 * b2Cross(p1, p2);
+					}
+					if (area <= b2_epsilon) {
+						// Too small for box2d
+						emit_changed();
+						ERR_FAIL_MSG("Polygon is too small. area " + rtos(area) + " <= " + rtos(b2_epsilon) + "");
+					}
+					// we know the points are convex, but we don't know if the points are too close or colinear
+					// b2Hull hull;
+					// hull.count = count;
+					// std::copy(b2_pts, b2_pts + count, hull.points);
+					b2Hull hull = b2ComputeHull(b2_pts, count);
+					if (hull.count > 2) {
+						shape.Set(hull);
 #ifdef DEBUG_DECOMPOSE_BOX2D
 						decomposed.push_back(smallpoly);
 #endif
