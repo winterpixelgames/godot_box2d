@@ -33,24 +33,26 @@ class Box2DJoint;
 
 struct B2_API b2BodyUserData {
 	b2BodyUserData() :
-			owner(NULL) {}
+			owner(NULL), void_ptr(NULL) {}
 
 	Box2DCollisionObject *owner;
-	//bool is_area;
+	void* void_ptr;
 };
 
 struct B2_API b2FixtureUserData {
 	b2FixtureUserData() :
-			owner(NULL) {}
+			owner(NULL), void_ptr(NULL) {}
 
 	Box2DFixture *owner;
+	void* void_ptr;
 };
 
 struct B2_API b2JointUserData {
 	b2JointUserData() :
-			owner(NULL) {}
+			owner(NULL), void_ptr(NULL) {}
 
 	Box2DJoint *owner;
+	void* void_ptr;
 };
 
 // Memory Allocation
