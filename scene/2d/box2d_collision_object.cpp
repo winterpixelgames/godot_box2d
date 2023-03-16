@@ -110,7 +110,8 @@ void Box2DCollisionObject::destroy_and_recreate() {
 	}
 }
 
-void Box2DCollisionObject::set_box2dworld_transform(const Transform2D &p_transform) {
+void Box2DCollisionObject::set_box2dworld_transform(Transform2D p_transform) {
+	p_transform.set_scale(get_global_scale());
 	set_global_transform(p_transform);
 }
 
