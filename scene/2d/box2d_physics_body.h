@@ -124,7 +124,6 @@ private:
 protected:
 	virtual void on_b2Body_created() override;
 
-	virtual void pre_step(float p_delta) override;
 	virtual void step(float p_delta) override;
 
 protected:
@@ -138,11 +137,9 @@ public:
 
 	virtual String get_configuration_warning() const override;
 
-	void _set_linear_velocity_no_check(const Vector2 &p_vel);
 	void set_linear_velocity(const Vector2 &p_vel);
 	Vector2 get_linear_velocity() const;
 
-	void _set_angular_velocity_no_check(const real_t p_omega);
 	void set_angular_velocity(const real_t p_omega);
 	real_t get_angular_velocity() const;
 
@@ -224,11 +221,6 @@ public:
 	void apply_central_linear_impulse(const Vector2 &p_impulse, bool p_wake = true);
 	void apply_torque_impulse(real_t p_impulse, bool p_wake = true);
 
-	// Kinematic body functions
-
-	void set_integrate_position(bool p_integrate_pos);
-	bool is_integrate_position_enabled() const;
-
 	// p_exclude_raycast_shapes is unused
 	bool move_and_collide(const Vector2 &p_motion, const float p_rotation, const bool p_infinite_inertia, KinematicCollision &r_collision, const bool p_exclude_raycast_shapes = true, const bool p_test_only = false);
 	bool test_move(const Transform2D &p_from, const Vector2 &p_motion, bool p_infinite_inertia = true);
@@ -244,9 +236,6 @@ public:
 
 	int get_slide_count() const;
 	KinematicCollision get_slide_collision(int p_bounce) const;
-
-	void set_sync_to_physics(bool p_enable);
-	bool is_sync_to_physics_enabled() const;
 
 	Box2DPhysicsBody();
 	~Box2DPhysicsBody();

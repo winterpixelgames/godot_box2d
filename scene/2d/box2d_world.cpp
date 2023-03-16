@@ -860,10 +860,11 @@ void Box2DWorld::step(float p_step, int32 velocity_iterations, int32 position_it
 	// 	}
 	// }
 
+	// Winterpixel commenting this out as we dont use it
 	// Handle pre-step logic
-	for (Set<Box2DCollisionObject *>::Element *obj = body_owners.front(); obj; obj = obj->next()) {
-		obj->get()->pre_step(p_step);
-	}
+	//for (Set<Box2DCollisionObject *>::Element *obj = body_owners.front(); obj; obj = obj->next()) {
+	//	obj->get()->pre_step(p_step);
+	//}
 
 	// Step world
 	world->Step(p_step, velocity_iterations, position_iterations);
