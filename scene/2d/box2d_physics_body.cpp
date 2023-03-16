@@ -130,8 +130,7 @@ void Box2DPhysicsBody::step(float p_delta) {
 			emit_signal("sleeping_state_changed");
 			prev_sleeping_state = awake;
 		}
-
-		if (get_type() == Mode::MODE_RIGID) {
+		if (get_type() != Mode::MODE_STATIC) {
 			sync_state();
 		}
 	}
