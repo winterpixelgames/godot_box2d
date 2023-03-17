@@ -39,6 +39,10 @@ void Box2DContact::_notification(int p_what) {
 Box2DContact::Box2DContact() {
 }
 
+Box2DContact::Box2DContact(b2Contact *contact) {
+	_set_contact(contact);
+}
+
 Box2DContact::~Box2DContact() {
 }
 
@@ -145,6 +149,10 @@ float Box2DContactImpulse::get_tangent_impulse(const int p_index) const {
 }
 
 Box2DContactImpulse::Box2DContactImpulse() {
+}
+
+Box2DContactImpulse::Box2DContactImpulse(const b2ContactImpulse *contact) {
+	_set_values(contact);
 }
 
 Box2DContactImpulse::~Box2DContactImpulse() {

@@ -14,7 +14,6 @@
 class Box2DContact : public Object {
 	GDCLASS(Box2DContact, Object);
 
-friend class Box2DWorld;
 friend class Box2DCollisionObject;
 
 private:
@@ -27,7 +26,7 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
-public:	
+public:
 
 	Box2DManifold* get_manifold();
 
@@ -59,13 +58,12 @@ public:
 	float get_tangent_speed();
 
 	Box2DContact();
+	Box2DContact(b2Contact *contact);
 	~Box2DContact();
 };
 
 class Box2DContactImpulse : public Object {
 	GDCLASS(Box2DContactImpulse, Object);
-
-friend class Box2DWorld;
 
 private:
 	b2ContactImpulse impulse{};
@@ -82,6 +80,7 @@ public:
 	float get_tangent_impulse(const int p_index) const;
 
 	Box2DContactImpulse();
+	Box2DContactImpulse(const b2ContactImpulse *contact);
 	~Box2DContactImpulse();
 };
 

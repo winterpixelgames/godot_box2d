@@ -302,36 +302,30 @@ inline ContactBufferManifold *Box2DWorld::try_buffer_contact(b2Contact *contact,
 
 void Box2DWorld::BeginContact(b2Contact *contact) {
 	if (has_method(STRINGNAME_begin_contact)) {
-		Box2DContact c;
-		c._set_contact(contact);
+		Box2DContact c(contact);
 		call(STRINGNAME_begin_contact, &c);
 	}
 }
 
 void Box2DWorld::EndContact(b2Contact *contact) {
 	if (has_method(STRINGNAME_end_contact)) {
-		Box2DContact c;
-		c._set_contact(contact);
+		Box2DContact c(contact);
 		call(STRINGNAME_end_contact, &c);
 	}
 }
 
 void Box2DWorld::PreSolve(b2Contact *contact, const b2Manifold *oldManifold) {
 	if (has_method(STRINGNAME_pre_solve)) {
-		Box2DContact c;
-		Box2DManifold m;
-		c._set_contact(contact);
-		m._manifold = (b2Manifold*)oldManifold; // cast away const
+		Box2DContact c(contact);
+		Box2DManifold m(const_cast<b2Manifold*>(oldManifold));
 		call(STRINGNAME_pre_solve, &c, &m);
 	}
 }
 
 void Box2DWorld::PostSolve(b2Contact *contact, const b2ContactImpulse *impulse) {
 	if (has_method(STRINGNAME_post_solve)) {
-		Box2DContact c;
-		c._set_contact(contact);
-		Box2DContactImpulse im;
-		im._set_values(impulse);
+		Box2DContact c(contact);
+		Box2DContactImpulse im(impulse);
 		call(STRINGNAME_post_solve, &c, &im);
 	}
 }

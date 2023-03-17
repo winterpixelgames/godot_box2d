@@ -42,6 +42,7 @@ public:
 	float get_separation(const int p_idx) const;
 
 	Box2DManifold();
+	Box2DManifold(b2Manifold* p_manifold);
 	~Box2DManifold();
 };
 

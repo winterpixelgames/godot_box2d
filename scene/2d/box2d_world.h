@@ -386,19 +386,6 @@ private:
 
 	inline ContactBufferManifold *try_buffer_contact(b2Contact *contact, int i);
 
-	virtual void BeginContact(b2Contact *contact) override;
-	virtual void EndContact(b2Contact *contact) override;
-	virtual void PreSolve(b2Contact *contact, const b2Manifold *oldManifold) override;
-
-	/// This lets you inspect a contact after the solver is finished. This is useful
-	/// for inspecting impulses.
-	/// Note: the contact manifold does not include time of impact impulses, which can be
-	/// arbitrarily large if the sub-step is small. Hence the impulse is provided explicitly
-	/// in a separate data structure.
-	/// Note: this is only called for contacts that are touching, solid, and awake.
-	virtual void PostSolve(b2Contact *contact, const b2ContactImpulse *impulse) override;
-	// end TODO
-
 	PointQueryCallback point_callback;
 	RaycastQueryCallback ray_callback;
 	ShapeQueryCallback shape_callback;
@@ -429,6 +416,19 @@ private:
 	b2Vec2 _solve_position(const Vector<const b2Shape *> &p_body_shapes, const MotionQueryParameters &p_params, int p_solve_steps = 4) const;
 
 protected:
+	virtual void BeginContact(b2Contact *contact) override;
+	virtual void EndContact(b2Contact *contact) override;
+	virtual void PreSolve(b2Contact *contact, const b2Manifold *oldManifold) override;
+
+	/// This lets you inspect a contact after the solver is finished. This is useful
+	/// for inspecting impulses.
+	/// Note: the contact manifold does not include time of impact impulses, which can be
+	/// arbitrarily large if the sub-step is small. Hence the impulse is provided explicitly
+	/// in a separate data structure.
+	/// Note: this is only called for contacts that are touching, solid, and awake.
+	virtual void PostSolve(b2Contact *contact, const b2ContactImpulse *impulse) override;
+	// end TODO
+
 	void _notification(int p_what);
 	static void _bind_methods();
 

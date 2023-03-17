@@ -55,5 +55,9 @@ float Box2DManifold::get_separation(const int p_idx) const {
 Box2DManifold::Box2DManifold() {
 }
 
+Box2DManifold::Box2DManifold(b2Manifold *p_manifold) {
+	_manifold = p_manifold;
+}
+
 Box2DManifold::~Box2DManifold() {
 }
