@@ -100,8 +100,6 @@ public:
 
 	void set_filter_data(uint16_t p_layer, uint16_t p_mask, int16 p_group_index);
 
-	void destroy_and_recreate();
-
 	//void set_contact_monitor(bool p_enabled);
 	//bool is_contact_monitor_enabled() const;
 

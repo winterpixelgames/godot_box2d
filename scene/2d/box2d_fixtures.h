@@ -42,6 +42,7 @@ class Box2DFixture : public Node2D {
 	Box2DCollisionObject *owner_node = NULL;
 
 	Vector<b2Fixture *> fixtures;
+	Transform2D last_fixture_transform;
 
 	void on_b2Fixture_destroyed(b2Fixture *fixture);
 	void on_parent_created(Node *);
@@ -117,8 +118,6 @@ public:
 
 	void set_restitution(real_t p_restitution);
 	real_t get_restitution() const;
-
-	void reset_fixture();
 
 	// restitution threshold?
 

@@ -19,7 +19,7 @@ void Box2DFixture::on_parent_created(Node *) {
 	WARN_PRINT("FIXTURE CREATED IN CALLBACK");
 }
 
-Transform2D get_box2dworld_transform(const Box2DFixture *fixture) {
+Transform2D get_transform_relative_to_body(const Box2DFixture *fixture) {
 	if (fixture->_get_owner_node()) {
 		Transform2D fixture_global_transform = fixture->get_global_transform();
 		Transform2D parent_global_transform = fixture->_get_owner_node()->get_global_transform();
@@ -117,6 +117,7 @@ void Box2DFixture::create_b2Fixture(b2Fixture *&p_fixture_out, const b2FixtureDe
 }
 
 bool Box2DFixture::create_b2() {
+	last_fixture_transform = get_transform_relative_to_body(this);
 	if (fixtures.size() <= 0) {
 		ERR_FAIL_COND_V(!owner_node, false);
 		ERR_FAIL_COND_V(!owner_node->body, false);
@@ -127,7 +128,7 @@ bool Box2DFixture::create_b2() {
 			for (int i = 0; i < shape_vector.size(); i++) {
 				fixtureDef.shape = shape_vector[i];
 				b2Fixture *fixture = NULL;
-				create_b2Fixture(fixture, fixtureDef, get_box2dworld_transform(this));
+				create_b2Fixture(fixture, fixtureDef, last_fixture_transform);
 				if (fixture) {
 					fixtures.push_back(fixture);
 				}
@@ -137,7 +138,7 @@ bool Box2DFixture::create_b2() {
 
 			fixtureDef.shape = shape->get_shape();
 			b2Fixture *fixture = NULL;
-			create_b2Fixture(fixture, fixtureDef, get_box2dworld_transform(this));
+			create_b2Fixture(fixture, fixtureDef, last_fixture_transform);
 			if (fixture) {
 				fixtures.push_back(fixture);
 			}
@@ -236,10 +237,12 @@ void Box2DFixture::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_TRANSFORM_CHANGED: {
-			// work around to clear the notification
-			get_global_transform();
-			update_shape();
-		} break;
+		 	// work around to clear the notification
+		 	get_global_transform();
+			if (!last_fixture_transform.is_equal_approx(get_transform_relative_to_body(this))) {
+		 		update_shape();
+			}
+		 } break;
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			// Do nothing
 		} break;
@@ -607,30 +610,6 @@ real_t Box2DFixture::get_restitution() const {
 	return fixtureDef.restitution;
 }
 
-void Box2DFixture::reset_fixture() {
-	fixtures.clear();
-	if (shape->is_composite_shape()) {
-		Vector<const b2Shape *> shape_vector = shape.ptr()->get_shapes();
-		for (int i = 0; i < shape_vector.size(); i++) {
-			fixtureDef.shape = shape_vector[i];
-			b2Fixture *fixture = NULL;
-			create_b2Fixture(fixture, fixtureDef, get_box2dworld_transform(this));
-			if (fixture) {
-					fixtures.push_back(fixture);
-			}
-		}
-	} else {
-		ERR_FAIL_COND_MSG(!shape->get_shape(), "fixtures need a shape");
-
-		fixtureDef.shape = shape->get_shape();
-		b2Fixture *fixture = NULL;
-		create_b2Fixture(fixture, fixtureDef, get_box2dworld_transform(this));
-		if (fixture) {
-				fixtures.push_back(fixture);
-		}
-	}
-}
-
 Box2DFixture::Box2DFixture() {
 	const float factor = GD_TO_B2;
 	fixtureDef.density = 0.4f * (1.0e-3f / (factor * factor)); // 0.4 g/px^2 default
@@ -641,7 +620,7 @@ Box2DFixture::Box2DFixture() {
 	}
 
 	set_notify_local_transform(true);
-	set_notify_transform(true);
+	// set_notify_transform(true);
 };
 
 Box2DFixture::~Box2DFixture() {

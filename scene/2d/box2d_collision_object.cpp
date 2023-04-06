@@ -75,41 +75,6 @@ void Box2DCollisionObject::update_filterdata() {
 	}
 }
 
-void Box2DCollisionObject::destroy_and_recreate() {
-	ERR_FAIL_COND_MSG(!body, "body must be set");
-	ERR_FAIL_COND_MSG(!world_node, "world must exist");
-	
-	bodyDef.position = body->GetPosition();
-	bodyDef.angle = body->GetAngle();
-	bodyDef.linearVelocity = body->GetLinearVelocity();
-	bodyDef.angularVelocity = body->GetAngularVelocity();
-	//bodyDef.linearDamping = 0.0f; // not needed
-	//bodyDef.angularDamping = 0.0f; // not needed
-	//bodyDef.allowSleep = true; // not needed
-	bodyDef.awake = body->IsAwake(); // not needed
-	//bodyDef.fixedRotation = false; // not needed
-	//bodyDef.bullet = false; // not needed
-	//bodyDef.type = b2_staticBody; // not needed
-	//bodyDef.enabled = true; // not needed
-	//bodyDef.gravityScale = 1.0f; // not needed
-
-	world_node->world->DestroyBody(body);
-	body = world_node->world->CreateBody(&bodyDef);
-	body->GetUserData().owner = this;
-
-	// re-add fixtures
-	for (int i = 0; i < get_child_count(); i++) {
-		Box2DFixture* fixture = Object::cast_to<Box2DFixture>(get_child(i));
-		if (fixture) {
-			fixture->reset_fixture();
-		}
-	}
-	Box2DPhysicsBody *body = Object::cast_to<Box2DPhysicsBody>(this);
-	if (body) {
-		body->update_mass(true);
-	}
-}
-
 void Box2DCollisionObject::set_box2dworld_transform(Transform2D p_transform) {
 	p_transform.set_scale(get_global_scale());
 	set_global_transform(p_transform);
