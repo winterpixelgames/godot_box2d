@@ -27,6 +27,7 @@
 #define BOX2D_VMETHOD_POST_SOLVE "_post_solve"
 #define BOX2D_VMETHOD_BEGIN_CONTACT "_begin_contact"
 #define BOX2D_VMETHOD_END_CONTACT "_end_contact"
+#define BOX2D_VMETHOD_SENSOR_TOUCHING "_sensor_touching"
 
 /**
 * @author Brian Semrau
@@ -191,6 +192,7 @@ public:
 	StringName STRINGNAME_post_solve = BOX2D_VMETHOD_POST_SOLVE;
 	StringName STRINGNAME_begin_contact = BOX2D_VMETHOD_BEGIN_CONTACT;
 	StringName STRINGNAME_end_contact = BOX2D_VMETHOD_END_CONTACT;
+	StringName STRINGNAME_sensor_touching = BOX2D_VMETHOD_SENSOR_TOUCHING;
 
 	struct MotionResult {
 		Vector2 motion;
@@ -418,6 +420,7 @@ private:
 protected:
 	virtual void BeginContact(b2Contact *contact) override;
 	virtual void EndContact(b2Contact *contact) override;
+	virtual void SensorTouching(b2Contact* contact) override;
 	virtual void PreSolve(b2Contact *contact, const b2Manifold *oldManifold) override;
 
 	/// This lets you inspect a contact after the solver is finished. This is useful

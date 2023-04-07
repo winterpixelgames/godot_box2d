@@ -314,6 +314,13 @@ void Box2DWorld::EndContact(b2Contact *contact) {
 	}
 }
 
+void Box2DWorld::SensorTouching(b2Contact * contact) {
+	if (has_method(STRINGNAME_sensor_touching)) {
+		Box2DContact c(contact);
+		call(STRINGNAME_end_contact, &c);
+	}
+}
+
 void Box2DWorld::PreSolve(b2Contact *contact, const b2Manifold *oldManifold) {
 	if (has_method(STRINGNAME_pre_solve)) {
 		Box2DContact c(contact);
