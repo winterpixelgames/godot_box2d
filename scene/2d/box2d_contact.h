@@ -20,6 +20,7 @@ private:
 public:
 	b2Contact* get_contact() { return contact; }
 	const Box2DManifoldWrapper* get_manifold() const { return &manifold; }
+	Box2DManifoldWrapper* get_manifold() { return &manifold; }
 
 	bool is_touching() const { return contact->IsTouching(); }
 	void set_enabled(const bool p_flag) { contact->SetEnabled(p_flag); }

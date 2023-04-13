@@ -109,6 +109,9 @@ public:
 	Array get_colliding_bodies() const; // Function exists for Godot feature congruency
 	int get_colliding_bodies_fast(Array p_array) const;
 	int get_colliding_contacts(Array p_array) const;
+
+	b2ContactEdge *get_contact_list() const { return body ? body->GetContactList() : nullptr; }
+	b2JointEdge *get_joint_list() const { return body ? body->GetJointList() : nullptr; }
 	
 	Box2DCollisionObject();
 	~Box2DCollisionObject();
