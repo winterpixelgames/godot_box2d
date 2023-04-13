@@ -324,7 +324,7 @@ void Box2DWorld::SensorTouching(b2Contact * contact) {
 void Box2DWorld::PreSolve(b2Contact *contact, const b2Manifold *oldManifold) {
 	if (has_method(STRINGNAME_pre_solve)) {
 		Box2DContact c(contact);
-		Box2DManifold m(const_cast<b2Manifold*>(oldManifold));
+		Box2DManifold m(contact);
 		call(STRINGNAME_pre_solve, &c, &m);
 	}
 }
