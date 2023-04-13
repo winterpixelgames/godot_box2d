@@ -48,8 +48,8 @@ void Box2DArea::_on_object_exited(Box2DCollisionObject *p_object) {
 }
 
 void Box2DArea::_on_fixture_entered(Box2DFixture *p_fixture, Box2DFixture *p_self_fixture) {
-	const Box2DPhysicsBody *body = Object::cast_to<const Box2DPhysicsBody>(p_fixture->_get_owner_node());
-	const Box2DArea *area = Object::cast_to<const Box2DArea>(p_fixture->_get_owner_node());
+	const Box2DPhysicsBody *body = Object::cast_to<const Box2DPhysicsBody>(p_fixture->get_owner());
+	const Box2DArea *area = Object::cast_to<const Box2DArea>(p_fixture->get_owner());
 	if (body) {
 		emit_signal("body_fixture_entered", p_fixture, p_self_fixture);
 	} else if (area && area->is_monitorable()) {
@@ -58,8 +58,8 @@ void Box2DArea::_on_fixture_entered(Box2DFixture *p_fixture, Box2DFixture *p_sel
 }
 
 void Box2DArea::_on_fixture_exited(Box2DFixture *p_fixture, Box2DFixture *p_self_fixture) {
-	const Box2DPhysicsBody *body = Object::cast_to<const Box2DPhysicsBody>(p_fixture->_get_owner_node());
-	const Box2DArea *area = Object::cast_to<const Box2DArea>(p_fixture->_get_owner_node());
+	const Box2DPhysicsBody *body = Object::cast_to<const Box2DPhysicsBody>(p_fixture->get_owner());
+	const Box2DArea *area = Object::cast_to<const Box2DArea>(p_fixture->get_owner());
 	if (body) {
 		emit_signal("body_fixture_exited", p_fixture, p_self_fixture);
 	} else if (area && area->is_monitorable()) {

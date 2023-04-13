@@ -62,8 +62,6 @@ protected:
 	static void _bind_methods();
 
 public:
-	inline const Box2DCollisionObject *_get_owner_node() const { return owner_node; }
-
 #ifdef TOOLS_ENABLED
 	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const override;
 #endif
@@ -71,6 +69,7 @@ public:
 	virtual String get_configuration_warning() const override;
 
 	Box2DCollisionObject *get_owner() const { return owner_node; }
+	Box2DCollisionObject *get_collision_object() const { return owner_node; }
 
 	virtual float sdf_map(Vector2 p);
 

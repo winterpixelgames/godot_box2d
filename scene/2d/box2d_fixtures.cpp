@@ -20,9 +20,9 @@ void Box2DFixture::on_parent_created(Node *) {
 }
 
 Transform2D get_transform_relative_to_body(const Box2DFixture *fixture) {
-	if (fixture->_get_owner_node()) {
+	if (fixture->get_owner()) {
 		Transform2D fixture_global_transform = fixture->get_global_transform();
-		Transform2D parent_global_transform = fixture->_get_owner_node()->get_global_transform();
+		Transform2D parent_global_transform = fixture->get_owner()->get_global_transform();
 		Transform2D relative_transform = parent_global_transform.affine_inverse() * fixture_global_transform;
 		// Scale isnt applied at the body level
 		// We want the relative position and rotation and the global scale
