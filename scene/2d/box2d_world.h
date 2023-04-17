@@ -358,6 +358,7 @@ private:
 	Vector2 gravity;
 	bool auto_step{true};
 	bool warm_starting{true};
+	bool continuous_physics{true};
 	b2World *world = NULL;
 
 	float last_step_delta = 0.0f;
@@ -451,6 +452,9 @@ public:
 
 	void set_warm_starting(bool p_warm_starting);
 	bool get_warm_starting() const;
+
+	void set_continuous_physics(bool p_continuous_physics);
+	bool get_continuous_physics() const;
 
 	b2World *get_b2_world() const;
 	//bool isLocked() const;

@@ -921,6 +921,15 @@ bool Box2DWorld::get_warm_starting() const {
 	return warm_starting;
 }
 
+void Box2DWorld::set_continuous_physics(bool p_continuous_physics) {
+	continuous_physics = p_continuous_physics;
+	if(world)
+		world->SetContinuousPhysics(continuous_physics);
+}
+bool Box2DWorld::get_continuous_physics() const {
+	return continuous_physics;
+}
+
 Array Box2DWorld::intersect_point(const Vector2 &p_point, int p_max_results, const Array &p_exclude, uint32_t p_collision_mask, bool p_collide_with_bodies, bool p_collide_with_sensors, uint32_t p_collision_layer, int32_t p_group_index) {
 	// This function uses queries in Box2DWorld-local space, not global space
 
