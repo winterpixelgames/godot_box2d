@@ -440,7 +440,7 @@ public:
 
 	void FindNewContacts();
 
-	void step(float p_step, int32 velocity_iterations = 8, int32 position_iterations = 8);
+	virtual void step(float p_step, int32 velocity_iterations = 8, int32 position_iterations = 8);
 
 	float get_last_step_delta() const;
 
