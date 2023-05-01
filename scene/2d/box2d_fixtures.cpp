@@ -620,7 +620,7 @@ Box2DFixture::Box2DFixture() {
 	}
 
 	set_notify_local_transform(true);
-	// set_notify_transform(true);
+	set_notify_transform(true);
 };
 
 Box2DFixture::~Box2DFixture() {
