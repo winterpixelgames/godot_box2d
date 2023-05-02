@@ -1504,8 +1504,10 @@ Box2DWorld* Box2DWorld::find_world(const Node* self)
 
 void Box2DWorld::FindNewContacts()
 {
+	is_in_find_new_contacts = true;
 	world->m_contactManager.FindNewContacts();
 	world->m_contactManager.Collide();
+	is_in_find_new_contacts = false;
 }
 
 bool Box2DWorld::UserAABBQueryCallback::ReportFixture(b2Fixture *fixture) {

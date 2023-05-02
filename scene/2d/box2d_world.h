@@ -432,12 +432,12 @@ protected:
 	/// Note: this is only called for contacts that are touching, solid, and awake.
 	virtual void PostSolve(b2Contact *contact, const b2ContactImpulse *impulse) override;
 	// end TODO
-
+	bool is_in_find_new_contacts{false};
 	void _notification(int p_what);
 	static void _bind_methods();
-
+	
 public:
-
+	
 	void FindNewContacts();
 
 	virtual void step(float p_step, int32 velocity_iterations = 8, int32 position_iterations = 8);
