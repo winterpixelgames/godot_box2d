@@ -1492,12 +1492,14 @@ Box2DWorld* Box2DWorld::find_world(const Node* self)
 		}
 	}
 
+	/*
 	if (!world)
 	{
 		if (!Engine::get_singleton()->is_editor_hint()) {
 			print_line("[Box2DWorld] couldn't find world.");
 		}
 	}
+	*/
 
 	return world;
 }
