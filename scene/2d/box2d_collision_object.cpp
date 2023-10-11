@@ -311,6 +311,9 @@ Array Box2DCollisionObject::get_colliding_bodies() const {
 
 int Box2DCollisionObject::get_colliding_bodies_fast(Array p_array) const {
 	// TODO if used in the broader scope of this module (beyond just circle/sdf shapes) this may report the same body node multiple times
+	if (body == nullptr) {
+		return 0;
+	}
 	const b2ContactEdge* contact_iterator = body->GetContactList();
 	int i = 0;
 	int before_size = p_array.size();
