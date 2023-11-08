@@ -232,7 +232,7 @@ protected:
 
 public:
 	Box2DFixture* mapFunc{nullptr};
-
+	float conversion_ratio {1.0f};
 	void set_map_func();
 	void get_map_func() const;
 
