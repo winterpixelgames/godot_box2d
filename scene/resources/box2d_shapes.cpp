@@ -785,10 +785,10 @@ void Box2DSDFShape::set_map_func() {
 	//print_line("Box2DSDFShape::set_map_func");
 	assert(mapFunc); // this always needs to be set
 	
-	float conversion =  ProjectSettings::get_singleton()->get("physics/2d/box2d_conversion_factor");
-	sdfShape.m_map = [this, conversion](const b2Vec2& p) {
-		Variant vec = Vector2(p.x*conversion, p.y*conversion);
-		return mapFunc->sdf_map(vec) / conversion;
+	sdfShape.m_map = [this](const b2Vec2& p) {
+		// b2 to gd
+		Vector2 vec = Vector2(p.x*conversion_ratio, p.y*conversion_ratio);
+		return mapFunc->sdf_map(vec) / conversion_ratio;
 	};
 	emit_changed();
 }
@@ -838,7 +838,8 @@ void Box2DSDFShape::draw(const RID &p_to_rid, const Viewport* p_viewport, const 
 }
 
 Box2DSDFShape::Box2DSDFShape() {
-	
+	conversion_ratio = ProjectSettings::get_singleton()->get("physics/2d/box2d_conversion_factor");
+	assert(conversion_ratio > 0.0f);
 }
 
 float Box2DSDFShape::map(const Vector2 p) {
@@ -850,8 +851,7 @@ float Box2DSDFShape::map(const Vector2 p) {
 }
 
 Vector2 Box2DSDFShape::gradient(const Vector2 p) {
-	float conversion =  ProjectSettings::get_singleton()->get("physics/2d/box2d_conversion_factor");
-	Vector2 pb2d = Vector2(p.x/conversion, p.y/conversion);
+	Vector2 pb2d = Vector2(p.x/conversion_ratio, p.y/conversion_ratio);
 	//sdfShape.Gradient() // expected coordinates in b2d space
 	b2Vec2 grad = sdfShape.Gradient(b2Vec2(pb2d.x, pb2d.y)); 
 	return Vector2(grad.x, grad.y);
