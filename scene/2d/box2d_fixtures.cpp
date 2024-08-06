@@ -200,20 +200,18 @@ void Box2DFixture::_notification(int p_what) {
 					owner_node->disconnect("enabled_state_changed", this, "update");
 				}
 				destroy_b2();
+				owner_node = nullptr;
+				if (new_owner && new_owner->body) {
+					owner_node = new_owner;
 
-				owner_node = new_owner;
-
-				if (owner_node) {
 					if (owner_node->has_signal("sleeping_state_changed")) {
 						owner_node->connect("sleeping_state_changed", this, "update");
 					}
 					owner_node->connect("enabled_state_changed", this, "update");
-
 					if (Object::cast_to<Box2DArea>(owner_node)) {
 						set_sensor(true);
 					}
-
-					if (owner_node->body && shape.is_valid()) {
+					if (shape.is_valid()) {
 						create_b2();
 					}
 				}

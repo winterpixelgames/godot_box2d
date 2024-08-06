@@ -370,9 +370,6 @@ private:
 	FixtureCollisionUpdateQueue<&Box2DCollisionObject::_on_fixture_entered> fixture_entered_queue;
 	FixtureCollisionUpdateQueue<&Box2DCollisionObject::_on_fixture_exited> fixture_exited_queue;
 
-	// TODO make sure these are using the best data structure
-	Set<Box2DCollisionObject *> body_owners;
-	Set<Box2DJoint *> joint_owners;
 
 	// b2World Callbacks
 	// TODO extract into classes
@@ -419,6 +416,9 @@ private:
 	b2Vec2 _solve_position(const Vector<const b2Shape *> &p_body_shapes, const MotionQueryParameters &p_params, int p_solve_steps = 4) const;
 
 protected:
+	// TODO make sure these are using the best data structure
+	Set<Box2DCollisionObject *> body_owners;
+	Set<Box2DJoint *> joint_owners;
 	virtual void BeginContact(b2Contact *contact) override;
 	virtual void EndContact(b2Contact *contact) override;
 	virtual void SensorTouching(b2Contact* contact) override;
