@@ -50,7 +50,6 @@ bool Box2DCollisionObject::destroy_b2Body() {
 		//body->GetUserData().owner = NULL;
 		world_node->world->DestroyBody(body);
 		world_node->body_owners.erase(this);
-		world_node = nullptr; // TODO ask jason why we need this if he remembers
 		body = nullptr;
 
 		// b2Fixture destruction is handled by Box2D
