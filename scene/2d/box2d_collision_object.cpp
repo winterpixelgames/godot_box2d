@@ -127,7 +127,6 @@ void Box2DCollisionObject::_notification(int p_what) {
 				if (world_node->world) {
 					destroy_b2Body();
 				}
-				world_node->body_owners.erase(this);
 			}
 		} break;
 
@@ -172,9 +171,6 @@ void Box2DCollisionObject::_notification(int p_what) {
 			// - world pre-step: pump queue
 
 			set_process_internal(false);
-			if (world_node) {
-				destroy_b2Body();
-			}
 		} break;
 	}
 }
