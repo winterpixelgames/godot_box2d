@@ -1461,7 +1461,7 @@ bool Box2DWorld::AABBFastQueryCallback::ReportFixture(b2Fixture *fixture) {
 	return true;
 }
 
-Box2DWorld* Box2DWorld::find_world(const Node* self)
+Box2DWorld* Box2DWorld::find_world(Node* self)
 {
 	// Look for direct ancestors first (parents, grandparents, etc)
 	Node* _ancestor = self->get_parent();
@@ -1476,7 +1476,7 @@ Box2DWorld* Box2DWorld::find_world(const Node* self)
 	// Look at uncles as well (siblings of parents, siblings of grandparents, etc)
 	if (!world)
 	{
-		_ancestor = self->get_parent();
+		_ancestor = self; // we start by looking at our own siblings
 		while (_ancestor && !world)
 		{
 			// You only have an uncle if you have a grandparent

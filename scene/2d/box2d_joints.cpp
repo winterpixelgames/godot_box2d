@@ -376,7 +376,7 @@ String Box2DJoint::get_configuration_warning() const {
 	String warning = Node2D::get_configuration_warning();
 
 	Node *_ancestor = get_parent();
-	Box2DWorld *new_world = Box2DWorld::find_world(this);
+	const Box2DWorld *new_world = Box2DWorld::find_world(const_cast<Box2DJoint*>(this));
 
 	if (!new_world) {
 		if (warning != String()) {

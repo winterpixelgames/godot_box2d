@@ -488,7 +488,7 @@ public:
 	// Returns the Box2DWorld that should contain the Box2D object passed in
 	// Look for Box2DWorlds that are direct ancestors first (parents, grandparents, etc)
 	// If not found, then look for Box2DWorlds that are uncles as well (siblings of parents, siblings of grandparents, etc)
-	static Box2DWorld* find_world(const Node* self);
+	static Box2DWorld* find_world(Node* self);
 
 	Box2DWorld();
 	~Box2DWorld();

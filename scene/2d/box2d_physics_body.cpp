@@ -528,7 +528,7 @@ void Box2DPhysicsBody::_remove_area_variant(const Variant &p_area) {
 String Box2DPhysicsBody::get_configuration_warning() const {
 	String warning = Node2D::get_configuration_warning();
 
-	Box2DWorld *new_world = Box2DWorld::find_world(this);
+	Box2DWorld *new_world = Box2DWorld::find_world(const_cast<Box2DPhysicsBody*>(this));
 
 	if (!new_world) {
 		if (warning != String()) {
