@@ -246,11 +246,11 @@ void Box2DFixture::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_DRAW: {
-			// Always on, Taken out for now for lldb breakpoint in child process
-			// TODO uncomment
-			//if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint()) {
-			//	break;
-			//}
+			
+			bool should_draw = Engine::get_singleton()->is_editor_hint() || (!Engine::get_singleton()->is_editor_hint() && get_tree()->is_debugging_collisions_hint()); 
+			if (!should_draw) {
+				break;
+			}
 
 			Color draw_col;
 			Box2DPhysicsBody *body_node = Object::cast_to<Box2DPhysicsBody>(owner_node);
