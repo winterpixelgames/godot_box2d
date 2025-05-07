@@ -491,7 +491,7 @@ public:
 	static Box2DWorld* find_world(Node* self);
 
 	Box2DWorld();
-	~Box2DWorld();
+	virtual ~Box2DWorld();
 };
 
 class Box2DPhysicsTestMotionResult : public Reference {
